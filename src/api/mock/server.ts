@@ -1,6 +1,7 @@
 import { type Grants } from '@/access/catalog'
 import { applyDependencies, levelIndex } from '@/access/dependencies'
 import type { Envelope, Me, Policy, Transport, TransportRequest, TransportResponse } from '../types'
+import { handleDomain, resetDomain } from './domain'
 
 /**
  * In-memory stand-in for the admin API. It follows the contract proposed in
@@ -20,7 +21,7 @@ export const MOCK_POLICY: Policy = {
 const ALL: Grants = {
   tickets: 'edit', users: 'view', kyc: 'approve', withdrawals: 'approve', transactions: 'view',
   requests: 'view', system_health: 'view', restrictions: 'edit', currencies: 'manage',
-  platform: 'manage', audit: 'view', access: 'manage',
+  platform: 'manage', audit: 'view', access: 'manage', markets: 'edit', prices: 'approve',
 }
 
 export const groups: Record<string, { name: string; version: number; grants: Grants }> = {
@@ -31,7 +32,7 @@ export const groups: Record<string, { name: string; version: number; grants: Gra
   },
   finance_analyst: {
     name: 'finance_analyst', version: 2,
-    grants: applyDependencies({ withdrawals: 'view', transactions: 'view', currencies: 'view' }).grants,
+    grants: applyDependencies({ withdrawals: 'view', transactions: 'view', currencies: 'view', markets: 'view', prices: 'view' }).grants,
   },
   finance_manager: {
     name: 'finance_manager', version: 2,
@@ -42,6 +43,7 @@ export const groups: Record<string, { name: string; version: number; grants: Gra
 const ADMINS: Record<string, { password: string; groups: string[] }> = {
   'ali@exchange.example': { password: 'correct horse battery staple', groups: ['super_admin'] },
   'sara@exchange.example': { password: 'correct horse battery staple', groups: ['support_agent'] },
+  'nima@exchange.example': { password: 'correct horse battery staple', groups: ['super_admin'] },
   'reza@exchange.example': { password: 'correct horse battery staple', groups: ['finance_manager'] },
 }
 
@@ -62,6 +64,7 @@ const sessions = new Map<string, MockSession>()
 const failures = new Map<string, number>()
 
 export function resetMock() {
+  resetDomain()
   challenges.clear()
   sessions.clear()
   failures.clear()
@@ -203,6 +206,8 @@ async function handle(req: TransportRequest): Promise<TransportResponse> {
     if (added.length) return fail(422, 'dependency_missing', { missing: added })
     return ok({ status: 'pending_second_approval', group: m[1], requested_by: s.email }, 202)
   }
+  const domain = handleDomain(req, { email: s.email, grants: mePayload(s.email).grants, elevated: now <= s.elevatedUntil })
+  if (domain) return domain
   return fail(404, 'not_found')
 }
 
@@ -218,5 +223,7 @@ function refresh(s: MockSession): TransportResponse {
 
 export const mockTransport: Transport = async (req) => {
   await new Promise((r) => setTimeout(r, 60))
-  return handle(req)
+  // Like HTTP: the request and the response are copies, never shared references.
+  const res = await handle(structuredClone(req))
+  return structuredClone(res)
 }

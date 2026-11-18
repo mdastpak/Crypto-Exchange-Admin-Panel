@@ -1,5 +1,10 @@
 {
-  "groups": { "operations": "عملیات", "finance": "مالی", "users": "کاربران", "system": "سیستم" },
+  "groups": {
+    "operations": "عملیات",
+    "finance": "مالی",
+    "users": "کاربران",
+    "system": "سیستم"
+  },
   "dashboard": "داشبورد",
   "currencies": "ارزها",
   "withdrawals": "برداشت‌ها",
@@ -8,5 +13,7 @@
   "tickets": "تیکت‌ها",
   "audit": "لاگ ممیزی",
   "access": "مدیریت دسترسی",
-  "sessions": "نشست‌های من"
+  "sessions": "نشست‌های من",
+  "markets": "بازارها",
+  "prices": "قیمت‌ها"
 }

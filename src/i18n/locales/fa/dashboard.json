@@ -1,0 +1,12 @@
+{
+  "platform": "وضعیت پلتفرم",
+  "pendingCurrencies": "ارز در انتظار تأیید",
+  "priceOverrides": "قیمت دستی",
+  "overridesWaiting": "منتظر تأیید",
+  "overridesInForce": "در جریان",
+  "marketsAttention": "بازار غیرفعال یا در تعمیرات",
+  "viewAll": "مشاهده",
+  "none": "هیچ",
+  "noAccess": "برای نمایش این بخش دسترسی ندارید.",
+  "welcome": "خلاصهٔ عملیات"
+}

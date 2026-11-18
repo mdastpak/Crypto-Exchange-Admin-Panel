@@ -21,6 +21,8 @@ export const RESOURCES: ResourceDef[] = [
   { key: 'system_health', levels: ['none', 'view'] },
   { key: 'restrictions', levels: ['none', 'request', 'edit'] },
   { key: 'currencies', levels: ['none', 'view', 'edit', 'manage'] },
+  { key: 'markets', levels: ['none', 'view', 'edit'] },
+  { key: 'prices', levels: ['none', 'view', 'edit', 'approve'] },
   { key: 'platform', levels: ['none', 'view', 'manage'] },
   { key: 'audit', levels: ['none', 'view'] },
   { key: 'access', levels: ['none', 'view', 'manage'] },

@@ -42,3 +42,25 @@ Source of the endpoint list: `docs/swagger.json` of the backend (`/api/v1/admin/
 - **Optimistic versions.** Edits send `version`; on `409 version_conflict` the form offers to reload.
 - **Unverified rows.** A `409 row_unverified` links to the matching integrity finding.
 - **Audit link.** Every detail page links to the audit log filtered by its `target_type` and `target_id`.
+
+## Required level per action (Phase 2)
+
+The panel hides what a group cannot use; the backend must enforce the same table. Levels are from [04-rbac.md](04-rbac.md). Routes marked **S** need a step-up (the backend's `adminRoutes` classification).
+
+| Screen and action | Endpoint | Level |
+| --- | --- | --- |
+| Currencies list, detail, networks list | `GET /admin/currencies`, `/{hk}`, `/{hk}/networks` | `currencies:view` |
+| Create, edit, status, delete, restore | `POST/PUT/DELETE /admin/currencies`, `/restore` | `currencies:edit` |
+| Network write | `PUT /admin/currencies/{hk}/networks/{network}` **S** | `currencies:manage` |
+| Capability override | `PUT/DELETE /admin/currencies/{hk}/capabilities/{c}` **S** | `currencies:manage` |
+| Delisting schedule, cancel | `POST .../delistings`, `.../cancel` **S** | `currencies:manage` |
+| Migrations list | `GET .../migrations` | `currencies:view` |
+| Markets list and detail | `GET /admin/markets`, `/{base}/{quote}` | `markets:view` |
+| Market write | `PUT /admin/markets/{base}/{quote}` **S** | `markets:edit` |
+| Reference price, overrides list | `GET .../price`, `GET /admin/price-overrides` | `prices:view` |
+| Set or end an override | `POST .../price-override`, `/price-overrides/{id}/end` **S** | `prices:edit` |
+| Approve an override (second administrator) | `POST /admin/price-overrides/{id}/approve` **S** | `prices:approve` |
+| Platform status and controls | `GET /admin/platform`, `/controls` | `platform:view` |
+| Create, change, lift a control | `POST/PATCH /admin/platform/controls`, `/lift` **S** | `platform:manage` |
+
+`markets` and `prices` are resources the panel added to the catalog in Phase 2; requirement 01 lists them.

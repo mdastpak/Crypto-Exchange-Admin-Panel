@@ -34,7 +34,9 @@
     "currencies": "ارزها",
     "platform": "کنترل پلتفرم",
     "audit": "لاگ ممیزی",
-    "access": "مدیریت دسترسی"
+    "access": "مدیریت دسترسی",
+    "markets": "بازارها",
+    "prices": "قیمت مرجع"
   },
   "groups": {
     "support_agent": "پشتیبانی",

@@ -3,7 +3,7 @@
 The back-office web application for the [Crypto Exchange](https://github.com/mdastpak/Crypto-Exchange) backend.
 Staff use it to run currencies and markets, review withdrawals, operate OTC routing, restrict users, lock the platform, and read the audit log.
 
-**Status:** Phase 1 (foundation) is built. See [docs/08-roadmap.md](docs/08-roadmap.md).
+**Status:** Phase 1 (foundation) and Phase 2 (dashboard, currencies and lifecycle, markets and prices, platform controls) are built. See [docs/08-roadmap.md](docs/08-roadmap.md).
 
 | Area | Choice |
 | --- | --- |
@@ -30,6 +30,7 @@ pnpm lint && pnpm typecheck && pnpm build
 | `ali@exchange.example` | super admin |
 | `sara@exchange.example` | support agent |
 | `reza@exchange.example` | finance manager |
+| `nima@exchange.example` | super admin (the second person for two-person actions) |
 
 Any six digits work for the email code and the authenticator code (`000000` is refused for the authenticator, to try the error). Sessions use the real policy: 15 minutes idle, 8 hours absolute, 10 minute tokens.
 

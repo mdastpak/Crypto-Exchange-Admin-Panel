@@ -23,6 +23,19 @@ Done and verified (22 unit and component tests, strict type-check, lint, product
 
 Not in Phase 1, moved to later phases: the forced password-change screen (needs `403 password_expired` from the backend) and the staff, security-settings, and access-review screens. They need the backend requirements first.
 
+## Phase 2 status
+
+Built against the backend's documented admin API (shapes from `swagger.json`), run in mock mode with the same rules, and covered by 37 tests plus a browser run of the main flows:
+
+- **Dashboard:** tiles for platform state, currencies waiting for approval, price overrides, and markets that are not active; each tile exists only if the administrator may read its source.
+- **Currencies:** filtered cursor list, create and edit with the optimistic `version` (a conflict offers a reload), status changes, delete and restore, networks (the contract and decimals of an existing network are locked, as the backend refuses to change them), capability overrides with a note, delisting schedule and cancel, migrations list.
+- **Markets and prices:** list, whole-market edit, live reference price (5 s refresh), price override with the 300 bps bound shown before sending, and the override list with approve (never your own) and end.
+- **Platform:** status, maintenance and lockdown creation, extend or change the message, and lift, with the two-person flow for withdrawals and trading.
+
+Not verified here: calls against a running backend. The `http` transport and the real shapes follow the documentation, but this session had no backend instance. Run the panel against `docker compose` of the backend and fix any difference before relying on it.
+
+Not in Phase 2: scheduling a migration, delisting settlement and notices views, forms for the less common market fields (`price_band_bps`, `max_leverage`), and the audit link on each detail page (Phase 3 with the audit log).
+
 ## Definition of done for any screen
 
 - Permission declared and tested (visible and hidden).

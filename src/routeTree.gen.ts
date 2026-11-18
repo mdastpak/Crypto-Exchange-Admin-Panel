@@ -14,8 +14,14 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAccessRouteImport } from './routes/_authenticated/access'
+import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
+import { Route as AuthenticatedPricesRouteImport } from './routes/_authenticated/prices'
 import { Route as AuthenticatedSessionsRouteImport } from './routes/_authenticated/sessions'
+import { Route as AuthenticatedCurrenciesIndexRouteImport } from './routes/_authenticated/currencies.index'
+import { Route as AuthenticatedCurrenciesHkRouteImport } from './routes/_authenticated/currencies.$hk'
+import { Route as AuthenticatedMarketsIndexRouteImport } from './routes/_authenticated/markets.index'
 import { Route as AuthenticatedSectionKeyRouteImport } from './routes/_authenticated/section.$key'
+import { Route as AuthenticatedMarketsBaseQuoteRouteImport } from './routes/_authenticated/markets.$base.$quote'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -41,32 +47,78 @@ const AuthenticatedAccessRoute = AuthenticatedAccessRouteImport.update({
   path: '/access',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlatformRoute = AuthenticatedPlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPricesRoute = AuthenticatedPricesRouteImport.update({
+  id: '/prices',
+  path: '/prices',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSessionsRoute = AuthenticatedSessionsRouteImport.update({
   id: '/sessions',
   path: '/sessions',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCurrenciesIndexRoute =
+  AuthenticatedCurrenciesIndexRouteImport.update({
+    id: '/currencies/',
+    path: '/currencies/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCurrenciesHkRoute =
+  AuthenticatedCurrenciesHkRouteImport.update({
+    id: '/currencies/$hk',
+    path: '/currencies/$hk',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMarketsIndexRoute =
+  AuthenticatedMarketsIndexRouteImport.update({
+    id: '/markets/',
+    path: '/markets/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSectionKeyRoute = AuthenticatedSectionKeyRouteImport.update({
   id: '/section/$key',
   path: '/section/$key',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMarketsBaseQuoteRoute =
+  AuthenticatedMarketsBaseQuoteRouteImport.update({
+    id: '/markets/$base/$quote',
+    path: '/markets/$base/$quote',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/access': typeof AuthenticatedAccessRoute
+  '/platform': typeof AuthenticatedPlatformRoute
+  '/prices': typeof AuthenticatedPricesRoute
   '/sessions': typeof AuthenticatedSessionsRoute
+  '/currencies/$hk': typeof AuthenticatedCurrenciesHkRoute
   '/section/$key': typeof AuthenticatedSectionKeyRoute
+  '/currencies/': typeof AuthenticatedCurrenciesIndexRoute
+  '/markets/': typeof AuthenticatedMarketsIndexRoute
+  '/markets/$base/$quote': typeof AuthenticatedMarketsBaseQuoteRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/access': typeof AuthenticatedAccessRoute
+  '/platform': typeof AuthenticatedPlatformRoute
+  '/prices': typeof AuthenticatedPricesRoute
   '/sessions': typeof AuthenticatedSessionsRoute
   '/': typeof AuthenticatedIndexRoute
+  '/currencies/$hk': typeof AuthenticatedCurrenciesHkRoute
   '/section/$key': typeof AuthenticatedSectionKeyRoute
+  '/currencies': typeof AuthenticatedCurrenciesIndexRoute
+  '/markets': typeof AuthenticatedMarketsIndexRoute
+  '/markets/$base/$quote': typeof AuthenticatedMarketsBaseQuoteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -74,9 +126,15 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/_authenticated/access': typeof AuthenticatedAccessRoute
+  '/_authenticated/platform': typeof AuthenticatedPlatformRoute
+  '/_authenticated/prices': typeof AuthenticatedPricesRoute
   '/_authenticated/sessions': typeof AuthenticatedSessionsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/currencies/$hk': typeof AuthenticatedCurrenciesHkRoute
   '/_authenticated/section/$key': typeof AuthenticatedSectionKeyRoute
+  '/_authenticated/currencies/': typeof AuthenticatedCurrenciesIndexRoute
+  '/_authenticated/markets/': typeof AuthenticatedMarketsIndexRoute
+  '/_authenticated/markets/$base/$quote': typeof AuthenticatedMarketsBaseQuoteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -85,25 +143,43 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/sign-in'
     | '/access'
+    | '/platform'
+    | '/prices'
     | '/sessions'
+    | '/currencies/$hk'
     | '/section/$key'
+    | '/currencies/'
+    | '/markets/'
+    | '/markets/$base/$quote'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
     | '/sign-in'
     | '/access'
+    | '/platform'
+    | '/prices'
     | '/sessions'
     | '/'
+    | '/currencies/$hk'
     | '/section/$key'
+    | '/currencies'
+    | '/markets'
+    | '/markets/$base/$quote'
   id:
     | '__root__'
     | '/_authenticated'
     | '/forgot-password'
     | '/sign-in'
     | '/_authenticated/access'
+    | '/_authenticated/platform'
+    | '/_authenticated/prices'
     | '/_authenticated/sessions'
     | '/_authenticated/'
+    | '/_authenticated/currencies/$hk'
     | '/_authenticated/section/$key'
+    | '/_authenticated/currencies/'
+    | '/_authenticated/markets/'
+    | '/_authenticated/markets/$base/$quote'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -149,11 +225,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccessRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/platform': {
+      id: '/_authenticated/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof AuthenticatedPlatformRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/prices': {
+      id: '/_authenticated/prices'
+      path: '/prices'
+      fullPath: '/prices'
+      preLoaderRoute: typeof AuthenticatedPricesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sessions': {
       id: '/_authenticated/sessions'
       path: '/sessions'
       fullPath: '/sessions'
       preLoaderRoute: typeof AuthenticatedSessionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/currencies/': {
+      id: '/_authenticated/currencies/'
+      path: '/currencies'
+      fullPath: '/currencies/'
+      preLoaderRoute: typeof AuthenticatedCurrenciesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/currencies/$hk': {
+      id: '/_authenticated/currencies/$hk'
+      path: '/currencies/$hk'
+      fullPath: '/currencies/$hk'
+      preLoaderRoute: typeof AuthenticatedCurrenciesHkRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/markets/': {
+      id: '/_authenticated/markets/'
+      path: '/markets'
+      fullPath: '/markets/'
+      preLoaderRoute: typeof AuthenticatedMarketsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/section/$key': {
@@ -163,21 +274,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSectionKeyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/markets/$base/$quote': {
+      id: '/_authenticated/markets/$base/$quote'
+      path: '/markets/$base/$quote'
+      fullPath: '/markets/$base/$quote'
+      preLoaderRoute: typeof AuthenticatedMarketsBaseQuoteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccessRoute: typeof AuthenticatedAccessRoute
+  AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
+  AuthenticatedPricesRoute: typeof AuthenticatedPricesRoute
   AuthenticatedSessionsRoute: typeof AuthenticatedSessionsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedCurrenciesHkRoute: typeof AuthenticatedCurrenciesHkRoute
   AuthenticatedSectionKeyRoute: typeof AuthenticatedSectionKeyRoute
+  AuthenticatedCurrenciesIndexRoute: typeof AuthenticatedCurrenciesIndexRoute
+  AuthenticatedMarketsIndexRoute: typeof AuthenticatedMarketsIndexRoute
+  AuthenticatedMarketsBaseQuoteRoute: typeof AuthenticatedMarketsBaseQuoteRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccessRoute: AuthenticatedAccessRoute,
+  AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
+  AuthenticatedPricesRoute: AuthenticatedPricesRoute,
   AuthenticatedSessionsRoute: AuthenticatedSessionsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedCurrenciesHkRoute: AuthenticatedCurrenciesHkRoute,
   AuthenticatedSectionKeyRoute: AuthenticatedSectionKeyRoute,
+  AuthenticatedCurrenciesIndexRoute: AuthenticatedCurrenciesIndexRoute,
+  AuthenticatedMarketsIndexRoute: AuthenticatedMarketsIndexRoute,
+  AuthenticatedMarketsBaseQuoteRoute: AuthenticatedMarketsBaseQuoteRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
