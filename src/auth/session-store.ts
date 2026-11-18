@@ -16,6 +16,7 @@ interface StartPayload {
   idleExpiresAt: number
   absoluteExpiresAt: number
   elevatedUntil: number
+  passwordExpired?: boolean
 }
 
 interface SessionState {
@@ -27,12 +28,14 @@ interface SessionState {
   idleExpiresAt: number
   absoluteExpiresAt: number
   elevatedUntil: number
+  passwordExpired: boolean
   endReason: EndReason
   start: (p: StartPayload) => void
   setToken: (token: string, tokenExpiresAt: number) => void
   setIdle: (idleExpiresAt: number) => void
   setElevated: (until: number) => void
   setMe: (me: Me) => void
+  setPasswordExpired: (v: boolean) => void
   end: (reason: Exclude<EndReason, null>) => void
   clearReason: () => void
 }
@@ -45,16 +48,18 @@ const empty = {
   idleExpiresAt: 0,
   absoluteExpiresAt: 0,
   elevatedUntil: 0,
+  passwordExpired: false,
 }
 
 export const useSession = create<SessionState>()((set) => ({
   ...empty,
   endReason: null,
-  start: (p) => set({ ...p, endReason: null }),
+  start: (p) => set({ ...p, passwordExpired: !!p.passwordExpired, endReason: null }),
   setToken: (token, tokenExpiresAt) => set({ token, tokenExpiresAt }),
   setIdle: (idleExpiresAt) => set({ idleExpiresAt }),
   setElevated: (elevatedUntil) => set({ elevatedUntil }),
   setMe: (me) => set({ me }),
+  setPasswordExpired: (passwordExpired) => set({ passwordExpired }),
   end: (reason) => set({ ...empty, endReason: reason }),
   clearReason: () => set({ endReason: null }),
 }))

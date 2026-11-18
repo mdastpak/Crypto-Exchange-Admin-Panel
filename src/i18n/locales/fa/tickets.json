@@ -1,0 +1,62 @@
+{
+  "title": "تیکت‌ها",
+  "stats": {
+    "backlog": "در صف",
+    "firstResponse": "اولین پاسخ (دقیقه)",
+    "resolution": "زمان حل (ساعت)",
+    "breaches": "نقض SLA"
+  },
+  "filters": {
+    "status": "وضعیت",
+    "priority": "اولویت",
+    "mine": "فقط مال من",
+    "apply": "اعمال"
+  },
+  "status": {
+    "open": "باز",
+    "pending_user": "منتظر کاربر",
+    "pending_internal": "منتظر داخلی",
+    "solved": "حل‌شده",
+    "closed": "بسته"
+  },
+  "priority": {
+    "low": "پایین",
+    "normal": "متوسط",
+    "high": "بالا",
+    "urgent": "فوری"
+  },
+  "sla": {
+    "ok": "در موعد",
+    "at_risk": "در خطر",
+    "breached": "نقض‌شده"
+  },
+  "cols": {
+    "id": "شماره",
+    "subject": "موضوع",
+    "category": "دسته",
+    "priority": "اولویت",
+    "status": "وضعیت",
+    "assignee": "مسئول",
+    "sla": "SLA",
+    "updated": "آخرین تغییر"
+  },
+  "unassigned": "بدون مسئول",
+  "claim": "برداشتن",
+  "claimed": "تیکت به شما اختصاص یافت.",
+  "reply": "پاسخ",
+  "internal": "یادداشت داخلی (برای کاربر ارسال نمی‌شود)",
+  "send": "ارسال",
+  "sent": "ارسال شد.",
+  "bodyLabel": "متن",
+  "user": "کاربر",
+  "agent": "پشتیبان",
+  "internalTag": "داخلی",
+  "changeStatus": "تغییر وضعیت",
+  "changePriority": "تغییر اولویت",
+  "updated": "به‌روز شد.",
+  "related": "اطلاعات کاربر",
+  "plainText": "متن‌ها همیشه به‌صورت متن ساده نمایش داده می‌شوند.",
+  "empty": "تیکتی نیست.",
+  "back": "تیکت‌ها",
+  "viewUser": "پروفایل کاربر"
+}

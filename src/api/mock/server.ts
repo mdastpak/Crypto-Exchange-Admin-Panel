@@ -1,7 +1,9 @@
-import { type Grants } from '@/access/catalog'
-import { applyDependencies, levelIndex } from '@/access/dependencies'
 import type { Envelope, Me, Policy, Transport, TransportRequest, TransportResponse } from '../types'
+import { admins, grantsOf, policy as policyRec, resetDirectory } from './directory'
+import { handleAccess } from './access'
 import { handleDomain, resetDomain } from './domain'
+import { handlePeople, resetPeople } from './people'
+import { handleFinance, resetFinance } from './finance'
 import { handleMoney, resetMoney } from './money'
 
 /**
@@ -17,36 +19,6 @@ export const MOCK_POLICY: Policy = {
   accessTokenMs: 10 * 60_000,
   warnMs: 2 * 60_000,
   stepUpMs: 5 * 60_000,
-}
-
-const ALL: Grants = {
-  tickets: 'edit', users: 'view', kyc: 'approve', withdrawals: 'approve', transactions: 'view',
-  requests: 'view', system_health: 'view', restrictions: 'edit', currencies: 'manage',
-  platform: 'manage', audit: 'view', access: 'manage', markets: 'edit', prices: 'approve',
-  payouts: 'edit', integrity: 'approve', venues: 'approve', otc: 'edit', notifications: 'edit',
-}
-
-export const groups: Record<string, { name: string; version: number; grants: Grants }> = {
-  super_admin: { name: 'super_admin', version: 1, grants: ALL },
-  support_agent: {
-    name: 'support_agent', version: 3,
-    grants: applyDependencies({ tickets: 'edit', restrictions: 'request', transactions: 'status' }).grants,
-  },
-  finance_analyst: {
-    name: 'finance_analyst', version: 2,
-    grants: applyDependencies({ withdrawals: 'view', transactions: 'view', currencies: 'view', markets: 'view', prices: 'view', payouts: 'view', audit: 'view' }).grants,
-  },
-  finance_manager: {
-    name: 'finance_manager', version: 2,
-    grants: applyDependencies({ withdrawals: 'approve', currencies: 'view', audit: 'view', payouts: 'edit', venues: 'approve' }).grants,
-  },
-}
-
-const ADMINS: Record<string, { password: string; groups: string[] }> = {
-  'ali@exchange.example': { password: 'correct horse battery staple', groups: ['super_admin'] },
-  'sara@exchange.example': { password: 'correct horse battery staple', groups: ['support_agent'] },
-  'nima@exchange.example': { password: 'correct horse battery staple', groups: ['super_admin'] },
-  'reza@exchange.example': { password: 'correct horse battery staple', groups: ['finance_manager'] },
 }
 
 interface MockSession {
@@ -66,8 +38,11 @@ const sessions = new Map<string, MockSession>()
 const failures = new Map<string, number>()
 
 export function resetMock() {
+  resetDirectory()
   resetDomain()
   resetMoney()
+  resetPeople()
+  resetFinance()
   challenges.clear()
   sessions.clear()
   failures.clear()
@@ -82,16 +57,8 @@ const fail = (status: number, code: string, info?: unknown): TransportResponse =
   body: { status, message: code, code, info, request_id: crypto.randomUUID() } as Envelope,
 })
 
-const mePayload = (email: string): Me => {
-  const gs = ADMINS[email]?.groups ?? []
-  const grants: Grants = {}
-  for (const g of gs) {
-    for (const [r, l] of Object.entries(groups[g]?.grants ?? {})) {
-      grants[r] = levelIndex(r, l) > levelIndex(r, grants[r] ?? 'none') ? l : (grants[r] ?? l)
-    }
-  }
-  return { email, groups: gs, grants }
-}
+const mePayload = (email: string): Me => ({ email, groups: (admins[email]?.groups ?? []).map((g) => g.id), grants: grantsOf(email) })
+
 const tokenFor = (n: number) => `mock-${n}-${crypto.randomUUID()}`
 
 function startSession(email: string): MockSession {
@@ -120,8 +87,6 @@ function signInInfo(s: MockSession) {
   }
 }
 
-const sensitive = (req: TransportRequest) => req.method === 'PUT' && /^\/admin\/access\/groups\//.test(req.path)
-
 async function handle(req: TransportRequest): Promise<TransportResponse> {
   const now = Date.now()
   const body = (req.body ?? {}) as Record<string, string>
@@ -131,8 +96,8 @@ async function handle(req: TransportRequest): Promise<TransportResponse> {
     const email = String(body.email ?? '').toLowerCase()
     const key = email || 'x'
     if ((failures.get(key) ?? 0) >= 5) return fail(429, 'rate_limited')
-    const acct = ADMINS[email]
-    const passwordOk = !!acct && acct.password === body.password && String(body.password).length >= 14
+    const acct = admins[email]
+    const passwordOk = !!acct && acct.status === 'active' && acct.password === body.password && String(body.password).length >= 14
     if (!passwordOk) failures.set(key, (failures.get(key) ?? 0) + 1)
     const id = crypto.randomUUID()
     challenges.set(id, { email, passwordOk })
@@ -144,7 +109,8 @@ async function handle(req: TransportRequest): Promise<TransportResponse> {
     const codesOk = /^\d{6}$/.test(String(body.email_code)) && /^\d{6}$/.test(String(body.totp)) && body.totp !== '000000'
     if (!ch || !ch.passwordOk || !codesOk) return fail(401, 'code_invalid')
     failures.delete(ch.email)
-    return ok(signInInfo(startSession(ch.email)))
+    admins[ch.email].last_sign_in_at = new Date().toISOString()
+    return ok({ ...signInInfo(startSession(ch.email)), password_expired: !!admins[ch.email].mustChangePassword })
   }
   if (req.method === 'POST' && req.path === '/admin/auth/password-reset') {
     return ok({ message: 'accepted', delay_hours: 24, hold_hours: 12 }, 202)
@@ -164,17 +130,28 @@ async function handle(req: TransportRequest): Promise<TransportResponse> {
     return fail(401, 'session_inactive')
   }
   if (now > s.tokenExpiresAt) return fail(401, 'token_invalid', { expired: true })
+  const rec = admins[s.email]
+  if (!rec || rec.status !== 'active') { s.ended = true; return fail(401, 'admin_inactive') }
+  if (req.method === 'POST' && req.path === '/admin/auth/password-change') {
+    const next = String((req.body as { new_password?: string })?.new_password ?? '')
+    const cur = String((req.body as { current_password?: string })?.current_password ?? '')
+    if (cur !== rec.password) return fail(403, 'password_invalid')
+    const errors: Record<string, string> = {}
+    if (next.length < policyRec.password.min_length) errors.new_password = `at least ${policyRec.password.min_length} characters`
+    else if (next === rec.password || new Set(next).size < 5) errors.new_password = 'is too weak or was used before'
+    if (Object.keys(errors).length) return fail(400, 'validation_failed', { errors })
+    rec.password = next; rec.mustChangePassword = false; rec.password_changed_at = new Date().toISOString()
+    return ok({ sessions_ended: 0 })
+  }
+  if (rec.mustChangePassword && !['/admin/me', '/admin/logout', '/admin/session/heartbeat'].includes(req.path)) return fail(403, 'password_expired')
 
   if (req.path === '/admin/session/heartbeat') s.idleExpiresAt = now + MOCK_POLICY.idleMs
   else if (req.path !== '/admin/me') s.idleExpiresAt = now + MOCK_POLICY.idleMs
 
-  if (sensitive(req) && now > s.elevatedUntil) {
-    return fail(403, 'step_up_required', { step_up: '/admin/step-up' })
-  }
 
   switch (`${req.method} ${req.path}`) {
     case 'GET /admin/me':
-      return ok({ ...mePayload(s.email), idle_expires_at: s.idleExpiresAt, absolute_expires_at: s.absoluteExpiresAt, elevated_until: s.elevatedUntil })
+      return ok({ ...mePayload(s.email), password_expired: !!rec.mustChangePassword, idle_expires_at: s.idleExpiresAt, absolute_expires_at: s.absoluteExpiresAt, elevated_until: s.elevatedUntil })
     case 'POST /admin/session/heartbeat':
       return ok({ idle_expires_at: s.idleExpiresAt })
     case 'POST /admin/step-up': {
@@ -194,23 +171,10 @@ async function handle(req: TransportRequest): Promise<TransportResponse> {
       return ok({ sessions: [...sessions.values()].filter((x) => !x.ended && x.email === s.email).map((x) => ({
         id: x.token.slice(0, 12), current: x.token === s.token, device: 'Chrome · Linux', network: '203.0.113.x',
         last_active: x.idleExpiresAt - MOCK_POLICY.idleMs, elevated_until: x.elevatedUntil })) })
-    case 'GET /admin/access/groups':
-      return ok({ groups: Object.entries(groups).map(([id, g]) => ({ id, version: g.version, grants: g.grants })) })
   }
 
-  const m = /^\/admin\/access\/groups\/([\w-]+)$/.exec(req.path)
-  if (m && req.method === 'PUT') {
-    const mine = mePayload(s.email).grants
-    if (mine.access !== 'manage') return fail(403, 'permission_denied', { required: 'access:manage' })
-    const g = groups[m[1]]
-    if (!g) return fail(404, 'not_found')
-    const grants = (req.body as { grants?: Grants })?.grants ?? {}
-    const { added } = applyDependencies(grants)
-    if (added.length) return fail(422, 'dependency_missing', { missing: added })
-    return ok({ status: 'pending_second_approval', group: m[1], requested_by: s.email }, 202)
-  }
   const ctx = { email: s.email, grants: mePayload(s.email).grants, elevated: now <= s.elevatedUntil }
-  const domain = handleDomain(req, ctx) ?? handleMoney(req, ctx)
+  const domain = handleAccess(req, ctx) ?? handlePeople(req, ctx) ?? handleFinance(req, ctx) ?? handleDomain(req, ctx) ?? handleMoney(req, ctx)
   if (domain) return domain
   return fail(404, 'not_found')
 }

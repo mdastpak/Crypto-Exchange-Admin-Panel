@@ -13,3 +13,5 @@ Each file is written as an issue for [`mdastpak/Crypto-Exchange`](https://github
 | 07 | [Admin password, rotation, reset delay, and session policy](07-admin-credentials-sessions.md) | Phase 1 sign-in |
 
 Common rules for all of them are in [06-api-contract.md](../06-api-contract.md#contract-rules-for-the-new-endpoints).
+
+Contract choices that the panel made beyond the issues are in [08-phase4-contract-notes.md](08-phase4-contract-notes.md).

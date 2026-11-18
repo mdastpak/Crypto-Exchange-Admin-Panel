@@ -8,7 +8,7 @@ Each phase ends in something that runs against the mock adapters and, where the 
 | 1 | Foundation (including the three-factor sign-in, password rotation and reset screens, session timers, and the access-manager shell): template import, strict TypeScript, i18n and RTL, API client, generated types, mock adapters, CI, security headers | No feature screens yet. Includes the sign-in with TOTP and the step-up dialog |
 | 2 | Core operations with real APIs: dashboard, currencies, lifecycle, markets, prices, platform controls | The highest-value, lowest-dependency screens |
 | 3 | Money flow: withdrawals, payouts, restrictions, OTC routing, venues, integrity, audit log, SMS routing, market data | Two-person flows and reasons everywhere |
-| 4 | Backend-dependent modules: users and KYC, ledger and finance, tickets, staff and roles | Built on mocks first; switched to real adapters as the backend requirements land |
+| 4 | Backend-dependent modules: users and KYC, ledger and finance, tickets, staff and roles | Built on mocks first; switched to real adapters as the backend requirements land. Done on the mock server |
 | 5 | Hardening: sealed payloads, WebAuthn for administrators, accessibility pass, performance budget, penetration test, runbook | |
 
 ## Phase 1 status
@@ -53,6 +53,21 @@ Built against the documented backend API, run in mock mode with the same rules, 
 Not verified here: calls against a running backend, as in Phase 2.
 
 Not in Phase 3: the market-data catalog screens (assets, conflicts, jobs, pairs, sources, venues of `/admin/market-data/*`), the delisting settlement and notices views, a structured OTC rule editor, and the user-facing details of a withdrawal (its payouts, history). They move to Phase 4 with the modules that need new backend work.
+
+## Phase 4 status
+
+These modules need backend work that does not exist yet (issues 524 to 530). The panel runs them on the mock server, which follows the issues and the choices in [backend-requirements/08](backend-requirements/08-phase4-contract-notes.md). 67 tests pass, including the grant-filtered lookups and every two-person flow; the main flows were also run in a browser.
+
+- **Users:** exact-match search by POST, masked profile, the cross-area lookup panel, a reveal dialog (special permission, reason, 30-second display), verification level with limits and history, level change, and recent activity.
+- **KYC:** queue, case dialog with automated checks, document access behind its own permission, claim, and decision (a closed case refuses more decisions).
+- **Tickets:** queue with SLA state and stats, thread with internal notes, claim, status and priority, and the lookup panel beside the thread, so a support agent sees what their groups allow and nothing more.
+- **Ledger and finance:** balances and entries by bounded query (unverified and unbalanced rows are shown, not hidden), house accounts, reconciliation runs with a manual run, and the daily report.
+- **Staff and access:** staff list with group expiry, create, change groups, disable and enable, TOTP reset, effective access per person; the access manager now has new groups, versions, retirement, and a pending-changes tab where a second super admin approves.
+- **Security:** the password and session policy editor with the backend's floors, and the forced password-change page for `403 password_expired`.
+
+Mock mode keeps its data inside each browser tab, so two administrators cannot interact across two browsers. To try a two-person flow, request as one administrator, sign out, and sign in as the other in the same tab.
+
+Not in Phase 4: the access review report (periodic recertification), the ledger export, ticket macros, attachments, and the staff session list; and, as before, no run against a real backend.
 
 ## Definition of done for any screen
 

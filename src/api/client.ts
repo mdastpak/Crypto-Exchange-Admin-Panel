@@ -52,6 +52,7 @@ async function call<T>(
     if (res.status === 401 && token && SESSION_ENDED_CODES[code]) {
       useSession.getState().end('revoked')
     }
+    if (res.status === 403 && code === 'password_expired') useSession.getState().setPasswordExpired(true)
     if (res.status === 403 && code === 'step_up_required' && !opts.skipStepUp && !retried) {
       if (await requestStepUp()) return call<T>(method, path, body, opts, true)
     }

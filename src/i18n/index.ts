@@ -11,6 +11,12 @@ import restrictions from './locales/fa/restrictions.json'
 import sms from './locales/fa/sms.json'
 import venues from './locales/fa/venues.json'
 import withdrawals from './locales/fa/withdrawals.json'
+import security from './locales/fa/security.json'
+import staff from './locales/fa/staff.json'
+import ledger from './locales/fa/ledger.json'
+import tickets from './locales/fa/tickets.json'
+import kyc from './locales/fa/kyc.json'
+import users from './locales/fa/users.json'
 import auth from './locales/fa/auth.json'
 import common from './locales/fa/common.json'
 import errors from './locales/fa/errors.json'
@@ -27,7 +33,7 @@ export const SUPPORTED_LOCALES = [
 
 export type LocaleCode = (typeof SUPPORTED_LOCALES)[number]['code']
 export const DEFAULT_LOCALE: LocaleCode = 'fa'
-export const NAMESPACES = ['common', 'auth', 'nav', 'errors', 'access', 'session', 'currencies', 'markets', 'platform', 'dashboard', 'withdrawals', 'restrictions', 'audit', 'integrity', 'venues', 'sms'] as const
+export const NAMESPACES = ['common', 'auth', 'nav', 'errors', 'access', 'session', 'currencies', 'markets', 'platform', 'dashboard', 'withdrawals', 'restrictions', 'audit', 'integrity', 'venues', 'sms', 'users', 'kyc', 'tickets', 'ledger', 'staff', 'security'] as const
 
 export function dirOf(code: string): 'rtl' | 'ltr' {
   return SUPPORTED_LOCALES.find((l) => l.code === code)?.dir ?? 'ltr'
@@ -39,7 +45,7 @@ export function applyLocale(code: string) {
 }
 
 void i18n.use(initReactI18next).init({
-  resources: { fa: { common, auth, nav, errors, access, session, currencies, markets, platform, dashboard, withdrawals, restrictions, audit, integrity, venues, sms } },
+  resources: { fa: { common, auth, nav, errors, access, session, currencies, markets, platform, dashboard, withdrawals, restrictions, audit, integrity, venues, sms, users, kyc, tickets, ledger, staff, security } },
   lng: DEFAULT_LOCALE,
   fallbackLng: DEFAULT_LOCALE,
   ns: [...NAMESPACES],

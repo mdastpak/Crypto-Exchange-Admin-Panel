@@ -21,5 +21,9 @@
   "integrity": "یکپارچگی",
   "venues": "venueها",
   "otc": "مسیریابی OTC",
-  "notifications": "مسیریابی پیامک"
+  "notifications": "مسیریابی پیامک",
+  "kyc": "بازبینی KYC",
+  "ledger": "دفتر کل",
+  "staff": "کارکنان",
+  "security": "سیاست امنیتی"
 }

@@ -12,6 +12,7 @@ interface SignInInfo {
   elevated_until: number
   policy: Policy
   me: Me
+  password_expired?: boolean
 }
 
 /** Step 1: password. The answer is the same for known and unknown accounts. */
@@ -33,6 +34,7 @@ export async function verify(challenge: string, emailCode: string, totp: string)
     idleExpiresAt: info.idle_expires_at,
     absoluteExpiresAt: info.absolute_expires_at,
     elevatedUntil: info.elevated_until,
+    passwordExpired: info.password_expired,
   })
 }
 

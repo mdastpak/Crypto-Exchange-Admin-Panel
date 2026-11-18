@@ -20,7 +20,8 @@
     "manage": "مدیریت",
     "lookup": "خلاصهٔ ماسک‌شده",
     "status": "فقط وضعیت",
-    "request": "درخواست"
+    "request": "درخواست",
+    "allow": "مجاز"
   },
   "resources": {
     "tickets": "تیکت‌ها",
@@ -41,7 +42,12 @@
     "integrity": "یکپارچگی",
     "venues": "venueها",
     "otc": "مسیریابی OTC",
-    "notifications": "مسیریابی پیامک"
+    "notifications": "مسیریابی پیامک",
+    "ledger": "دفتر کل",
+    "staff": "کارکنان",
+    "security": "سیاست امنیتی",
+    "reveal_pii": "نمایش اطلاعات هویتی",
+    "kyc_documents": "مشاهدهٔ مدارک KYC"
   },
   "groups": {
     "support_agent": "پشتیبانی",
@@ -49,5 +55,52 @@
     "finance_manager": "مدیر مالی",
     "ticket_agent": "تیکتینگ",
     "super_admin": "سوپر ادمین"
-  }
+  },
+  "tabs": {
+    "groups": "گروه‌ها",
+    "pending": "منتظر تأیید"
+  },
+  "newGroup": "گروه جدید",
+  "retire": "بازنشستگی گروه",
+  "versions": "نسخه‌ها",
+  "systemGroup": "گروه سیستمی؛ قابل ویرایش نیست.",
+  "members": "{{n}} عضو",
+  "retired": "بازنشسته",
+  "newGroupDialog": {
+    "title": "گروه جدید",
+    "name": "نام (حروف کوچک، رقم، _ )",
+    "description": "توضیح",
+    "reason": "دلیل",
+    "submitted": "گروه ثبت شد و منتظر تأیید سوپر ادمین دوم است."
+  },
+  "pending": {
+    "empty": "تغییری منتظر تأیید نیست.",
+    "kind": {
+      "group_change": "تغییر گروه",
+      "group_create": "گروه جدید",
+      "staff_create": "ادمین جدید",
+      "staff_groups": "تغییر گروه‌های ادمین",
+      "staff_reset_totp": "بازنشانی TOTP",
+      "policy_change": "تغییر سیاست امنیتی"
+    },
+    "requestedBy": "درخواست‌کننده",
+    "reason": "دلیل",
+    "approve": "تأیید",
+    "reject": "رد",
+    "own": "شما درخواست‌کننده‌اید و نمی‌توانید تأیید کنید.",
+    "approved": "تغییر تأیید و اعمال شد.",
+    "rejected": "تغییر رد شد.",
+    "status": {
+      "pending": "منتظر",
+      "approved": "تأییدشده",
+      "rejected": "ردشده"
+    }
+  },
+  "versionsDialog": {
+    "title": "نسخه‌های {{name}}",
+    "author": "ثبت: {{who}}",
+    "approvedBy": "تأیید: {{who}}",
+    "grants": "{{n}} دسترسی"
+  },
+  "dependencyMissing": "دسترسی‌های وابسته کامل نیست: {{items}}"
 }

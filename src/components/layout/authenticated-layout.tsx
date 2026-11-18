@@ -18,6 +18,7 @@ export function AuthenticatedLayout() {
   const navigate = useNavigate()
   const token = useSession((s) => s.token)
   const endReason = useSession((s) => s.endReason)
+  const passwordExpired = useSession((s) => s.passwordExpired)
   useSessionGuard()
 
   useEffect(() => startTabSync(), [])
@@ -32,7 +33,9 @@ export function AuthenticatedLayout() {
     void navigate({ to: '/sign-in', replace: true })
   }, [token, endReason, navigate, t])
 
-  if (!token) return null
+  useEffect(() => { if (token && passwordExpired) void navigate({ to: '/change-password', replace: true }) }, [token, passwordExpired, navigate])
+
+  if (!token || passwordExpired) return null
 
   return (
     <LayoutProvider>

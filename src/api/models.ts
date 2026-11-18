@@ -379,3 +379,125 @@ export interface SmsStatus {
   window_minutes: number
   providers: { name: string; templates: string[]; healthy: boolean; breaker_open_until?: string; accepted: number; provider_errors: number; delivered: number; failed: number }[]
 }
+
+/* ---------- Phase 4: users, KYC, tickets, ledger, staff, access ---------- */
+
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'BANNED'
+export interface UserRow {
+  hk: string
+  email_masked?: string
+  mobile_masked?: string
+  status: UserStatus
+  level: number
+  kyc_state: KycState
+  created_at: string
+  last_sign_in_at?: string
+}
+export interface UserProfile extends UserRow {
+  name_masked?: string
+  country?: string
+  security_hold_until?: string
+  counts: { sessions: number; restrictions_active: number }
+  flags: string[]
+}
+/** What a group may see about a user from another area. A block is absent when the grant is missing. */
+export interface UserLookup {
+  user?: UserRow
+  kyc?: { state: KycState; level: number; last_decision_at?: string }
+  withdrawals?: { id: string; amount: string; currency: string; status: string; created_at: string }[]
+  transactions?: { id: string; kind: string; currency: string; status: string; created_at: string }[]
+  requests?: { id: string; kind: string; status: string; created_at: string }[]
+  system_health?: { mode: 'open' | 'maintenance'; lockdowns: string[]; price_engine: 'ok' | 'degraded'; venues_stale: number }
+}
+export interface Verification {
+  level: number
+  allows: { deposit: boolean; trade: boolean; withdraw: boolean }
+  limits: { currency: string; daily: string; remaining: string }[]
+  history: { from: number; to: number; by: string; at: string; reason: string }[]
+}
+export interface ActivityEvent { id: string; at: string; action: string; ip?: string; outcome: 'success' | 'failure' | 'denied' }
+
+export type KycState = 'none' | 'pending' | 'in_review' | 'needs_info' | 'approved' | 'rejected'
+export interface KycCase {
+  id: string
+  user_hk: string
+  status: Exclude<KycState, 'none'>
+  level_requested: number
+  assigned_to?: string
+  created_at: string
+  checks: { identity: 'pass' | 'fail' | 'pending'; liveness: 'pass' | 'fail' | 'pending'; sanctions: 'clear' | 'match' | 'pending' }
+  documents?: { id: string; kind: string; name: string; uploaded_at: string }[]
+  notes?: { by: string; at: string; text: string }[]
+}
+
+export type TicketStatus = 'open' | 'pending_user' | 'pending_internal' | 'solved' | 'closed'
+export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent'
+export interface Ticket {
+  id: string
+  user_hk: string
+  subject: string
+  category: string
+  priority: TicketPriority
+  status: TicketStatus
+  assignee?: string
+  sla_state: 'ok' | 'at_risk' | 'breached'
+  created_at: string
+  updated_at: string
+  messages?: { id: string; author_type: 'user' | 'agent'; author: string; internal: boolean; body: string; created_at: string }[]
+}
+export interface TicketStats { backlog: number; first_response_minutes: number; resolution_hours: number; sla_breaches: number; by_agent: { agent: string; open: number }[] }
+
+export interface LedgerBalance { user_hk: string; currency: string; available: string; locked: string; pending: string; verified: boolean }
+export interface LedgerEntry {
+  id: string
+  kind: string
+  reference: string
+  idempotency_key: string
+  currency: string
+  created_at: string
+  postings: { account: string; amount: string }[]
+  balanced: boolean
+}
+export interface HouseAccount { account: string; currency: string; balance: string }
+export interface ReconRun { id: string; started_at: string; duration_ms: number; result: 'ok' | 'differences' | 'running'; differences: { currency: string; amount: string }[] }
+export interface DailyRow { day: string; currency: string; deposits: string; withdrawals: string; fees: string; otc_volume: string }
+
+export interface StaffGroupRef { id: string; expires_at?: string }
+export interface StaffRow {
+  hk: string
+  email: string
+  status: 'active' | 'disabled'
+  groups: StaffGroupRef[]
+  totp_enabled: boolean
+  last_sign_in_at?: string
+  password_changed_at: string
+  password_expires_at: string
+  must_change_password: boolean
+}
+export interface AccessGroup {
+  id: string
+  name: string
+  description: string
+  status: 'active' | 'retired'
+  system: boolean
+  version: number
+  grants: Record<string, string>
+  members: number
+}
+export interface GroupVersion { version: number; grants: Record<string, string>; reason: string; author: string; approved_by?: string; at: string }
+export interface PendingChange {
+  id: string
+  kind: 'group_change' | 'group_create' | 'staff_create' | 'staff_groups' | 'staff_reset_totp' | 'policy_change'
+  summary: string
+  requested_by: string
+  requested_at: string
+  reason: string
+  status: 'pending' | 'approved' | 'rejected'
+  decided_by?: string
+  decided_at?: string
+}
+export interface SecurityPolicy {
+  version: number
+  password: { min_length: number; max_age_days: number; reset_delay_hours: number; post_reset_hold_hours: number; history: number }
+  session: { idle_minutes: number; absolute_hours: number; access_token_minutes: number; max_per_admin: number; step_up_minutes: number }
+}

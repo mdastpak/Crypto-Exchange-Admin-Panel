@@ -31,6 +31,12 @@ export const RESOURCES: ResourceDef[] = [
   { key: 'platform', levels: ['none', 'view', 'manage'] },
   { key: 'audit', levels: ['none', 'view'] },
   { key: 'access', levels: ['none', 'view', 'manage'] },
+  { key: 'ledger', levels: ['none', 'view', 'edit'] },
+  { key: 'staff', levels: ['none', 'view', 'manage'] },
+  { key: 'security', levels: ['none', 'view', 'manage'] },
+  // Special permissions: a switch, not a scale.
+  { key: 'reveal_pii', levels: ['none', 'allow'] },
+  { key: 'kyc_documents', levels: ['none', 'allow'] },
 ]
 
 /**

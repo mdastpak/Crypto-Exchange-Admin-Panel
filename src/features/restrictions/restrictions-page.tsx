@@ -24,12 +24,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const stateOf = (r: Restriction) => (r.lifted_at ? 'lifted' : !r.active ? 'ended' : 'active')
 
-export function RestrictionsPage() {
+export function RestrictionsPage({ initialHk }: { initialHk?: string }) {
   const { t } = useTranslation('restrictions')
   const qc = useQueryClient()
   const canEdit = useCan('restrictions', 'edit')
-  const [input, setInput] = useState('')
-  const [hk, setHk] = useState('')
+  const [input, setInput] = useState(initialHk ?? '')
+  const [hk, setHk] = useState(initialHk && UUID.test(initialHk) ? initialHk.toLowerCase() : '')
   const [creating, setCreating] = useState(false)
   const [lifting, setLifting] = useState<Restriction | null>(null)
   const valid = UUID.test(input.trim())

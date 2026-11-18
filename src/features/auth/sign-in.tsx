@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/api/types'
 import { login, verify } from '@/auth/auth-api'
+import { useSession } from '@/auth/session-store'
 import { isSixDigits } from '@/lib/digits'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -44,7 +45,7 @@ export function SignIn() {
         if (!isSixDigits(emailCode) || !isSixDigits(totp)) return setError(t('signInFailed'))
         await verify(challenge, emailCode, totp)
         setPassword('')
-        await navigate({ to: '/', replace: true })
+        await navigate({ to: useSession.getState().passwordExpired ? '/change-password' : '/', replace: true })
       }
     } catch (e) {
       fail(e)
