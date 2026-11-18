@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/api/client'
-import type { Currency, Market, Page, PlatformOverview, PriceOverride } from '@/api/models'
+import type { Currency, IntegrityFinding, Market, Page, Payout, PlatformOverview, PriceOverride, Withdrawal } from '@/api/models'
 import { useCan } from '@/auth/permissions'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
@@ -18,11 +18,18 @@ export function Dashboard() {
   const canCurrencies = useCan('currencies', 'view')
   const canPrices = useCan('prices', 'view')
   const canMarkets = useCan('markets', 'view')
+  const canWithdrawals = useCan('withdrawals', 'view')
+  const canPayouts = useCan('payouts', 'view')
+  const canIntegrity = useCan('integrity', 'view')
 
   const platform = useQuery({ queryKey: ['admin', 'platform'], queryFn: () => api.get<PlatformOverview>('/admin/platform'), enabled: canPlatform, refetchInterval: 15_000 })
   const pending = useQuery({ queryKey: ['admin', 'currencies', 'pending-count'], queryFn: () => api.get<Page<Currency>>('/admin/currencies?status=pending&limit=200'), enabled: canCurrencies })
   const overrides = useQuery({ queryKey: ['admin', 'price-overrides'], queryFn: () => api.get<PriceOverride[]>('/admin/price-overrides'), enabled: canPrices, refetchInterval: 15_000 })
   const markets = useQuery({ queryKey: ['admin', 'markets'], queryFn: () => api.get<Market[]>('/admin/markets'), enabled: canMarkets })
+
+  const wd = useQuery({ queryKey: ['admin', 'withdrawals', 'review'], queryFn: () => api.get<Withdrawal[]>('/admin/withdrawals?status=review&limit=100'), enabled: canWithdrawals, refetchInterval: 20_000 })
+  const po = useQuery({ queryKey: ['admin', 'payouts', 'submitted'], queryFn: () => api.get<Payout[]>('/admin/payouts?status=submitted&limit=100'), enabled: canPayouts, refetchInterval: 20_000 })
+  const ig = useQuery({ queryKey: ['admin', 'integrity', 'open-count'], queryFn: () => api.get<Page<IntegrityFinding>>('/admin/integrity/findings?limit=100'), enabled: canIntegrity, refetchInterval: 30_000 })
 
   const waiting = overrides.data?.filter((o) => o.pending).length ?? 0
   const inForce = overrides.data?.filter((o) => o.in_force).length ?? 0
@@ -43,6 +50,15 @@ export function Dashboard() {
                 </div>
               )}
             </Tile>
+          )}
+          {canWithdrawals && (
+            <Tile title={t('withdrawalsReview')} to='/withdrawals' loading={wd.isPending}><Big n={wd.data?.length ?? 0} warn /></Tile>
+          )}
+          {canPayouts && (
+            <Tile title={t('submittedPayouts')} to='/payouts' loading={po.isPending}><Big n={po.data?.length ?? 0} warn /></Tile>
+          )}
+          {canIntegrity && (
+            <Tile title={t('integrityOpen')} to='/integrity' loading={ig.isPending}><Big n={ig.data?.items.length ?? 0} warn /></Tile>
           )}
           {canCurrencies && (
             <Tile title={t('pendingCurrencies')} to='/currencies' loading={pending.isPending}>

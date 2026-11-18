@@ -1,0 +1,40 @@
+{
+  "title": "لاگ ممیزی",
+  "filters": {
+    "action": "عملیات (مثل currency.update)",
+    "actor": "شناسهٔ مجری",
+    "targetType": "نوع هدف",
+    "targetId": "شناسهٔ هدف",
+    "outcome": "نتیجه",
+    "since": "از",
+    "until": "تا",
+    "apply": "اعمال",
+    "clear": "پاک‌کردن"
+  },
+  "outcome": {
+    "success": "موفق",
+    "failure": "ناموفق",
+    "denied": "ردشده"
+  },
+  "integrity": {
+    "verified": "تأییدشده",
+    "mismatch": "تغییر خارج از بک‌اند",
+    "unsealed": "بدون مهر",
+    "unchecked": "بررسی‌نشده"
+  },
+  "cols": {
+    "time": "زمان",
+    "action": "عملیات",
+    "actor": "مجری",
+    "target": "هدف",
+    "outcome": "نتیجه",
+    "integrity": "یکپارچگی"
+  },
+  "detail": "جزئیات رویداد",
+  "before": "قبل",
+  "after": "بعد",
+  "noChanges": "این رویداد تغییر فیلدی ندارد.",
+  "requestId": "شناسهٔ درخواست",
+  "ip": "نشانی IP",
+  "reason": "دلیل"
+}

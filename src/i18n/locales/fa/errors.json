@@ -40,6 +40,16 @@
     "step_up_required": "تأیید مجدد هویت لازم است.",
     "not_found": "پیدا نشد.",
     "code_invalid": "کد اشتباه است.",
-    "unauthorized": "دسترسی مجاز نیست."
+    "unauthorized": "دسترسی مجاز نیست.",
+    "withdrawal_not_found": "برداشت پیدا نشد.",
+    "withdrawal_not_in_review": "این برداشت دیگر منتظر بازبینی نیست.",
+    "payout_not_open": "این payout دیگر باز نیست؛ هیچ payoutی دوبار پرداخت نمی‌شود.",
+    "already_lifted": "این محدودیت قبلاً برداشته شده است.",
+    "already_resolved": "این یافته قبلاً بسته شده است.",
+    "already_cleared": "این hold قبلاً برداشته شده است.",
+    "row_changed": "ردیف از زمان درخواست تغییر کرده است. نفر اول باید دوباره درخواست بدهد.",
+    "own_row": "این ردیف متعلق به حساب خودتان است.",
+    "sms_not_configured": "پیامک در این استقرار پیکربندی نشده است.",
+    "venues_unavailable": "اطلاعات venueها در دسترس نیست."
   }
 }

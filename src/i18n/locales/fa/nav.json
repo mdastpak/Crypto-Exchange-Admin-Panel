@@ -15,5 +15,11 @@
   "access": "مدیریت دسترسی",
   "sessions": "نشست‌های من",
   "markets": "بازارها",
-  "prices": "قیمت‌ها"
+  "prices": "قیمت‌ها",
+  "payouts": "payoutها",
+  "restrictions": "محدودیت کاربران",
+  "integrity": "یکپارچگی",
+  "venues": "venueها",
+  "otc": "مسیریابی OTC",
+  "notifications": "مسیریابی پیامک"
 }

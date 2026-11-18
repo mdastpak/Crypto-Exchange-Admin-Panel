@@ -2,6 +2,7 @@ import { type Grants } from '@/access/catalog'
 import { applyDependencies, levelIndex } from '@/access/dependencies'
 import type { Envelope, Me, Policy, Transport, TransportRequest, TransportResponse } from '../types'
 import { handleDomain, resetDomain } from './domain'
+import { handleMoney, resetMoney } from './money'
 
 /**
  * In-memory stand-in for the admin API. It follows the contract proposed in
@@ -22,6 +23,7 @@ const ALL: Grants = {
   tickets: 'edit', users: 'view', kyc: 'approve', withdrawals: 'approve', transactions: 'view',
   requests: 'view', system_health: 'view', restrictions: 'edit', currencies: 'manage',
   platform: 'manage', audit: 'view', access: 'manage', markets: 'edit', prices: 'approve',
+  payouts: 'edit', integrity: 'approve', venues: 'approve', otc: 'edit', notifications: 'edit',
 }
 
 export const groups: Record<string, { name: string; version: number; grants: Grants }> = {
@@ -32,11 +34,11 @@ export const groups: Record<string, { name: string; version: number; grants: Gra
   },
   finance_analyst: {
     name: 'finance_analyst', version: 2,
-    grants: applyDependencies({ withdrawals: 'view', transactions: 'view', currencies: 'view', markets: 'view', prices: 'view' }).grants,
+    grants: applyDependencies({ withdrawals: 'view', transactions: 'view', currencies: 'view', markets: 'view', prices: 'view', payouts: 'view', audit: 'view' }).grants,
   },
   finance_manager: {
     name: 'finance_manager', version: 2,
-    grants: applyDependencies({ withdrawals: 'approve', currencies: 'view', audit: 'view' }).grants,
+    grants: applyDependencies({ withdrawals: 'approve', currencies: 'view', audit: 'view', payouts: 'edit', venues: 'approve' }).grants,
   },
 }
 
@@ -65,6 +67,7 @@ const failures = new Map<string, number>()
 
 export function resetMock() {
   resetDomain()
+  resetMoney()
   challenges.clear()
   sessions.clear()
   failures.clear()
@@ -206,7 +209,8 @@ async function handle(req: TransportRequest): Promise<TransportResponse> {
     if (added.length) return fail(422, 'dependency_missing', { missing: added })
     return ok({ status: 'pending_second_approval', group: m[1], requested_by: s.email }, 202)
   }
-  const domain = handleDomain(req, { email: s.email, grants: mePayload(s.email).grants, elevated: now <= s.elevatedUntil })
+  const ctx = { email: s.email, grants: mePayload(s.email).grants, elevated: now <= s.elevatedUntil }
+  const domain = handleDomain(req, ctx) ?? handleMoney(req, ctx)
   if (domain) return domain
   return fail(404, 'not_found')
 }

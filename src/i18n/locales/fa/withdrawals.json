@@ -1,0 +1,73 @@
+{
+  "title": "برداشت‌ها",
+  "payoutsTitle": "payoutها",
+  "statusFilter": "وضعیت",
+  "status": {
+    "review": "در انتظار بازبینی",
+    "queued": "در صف",
+    "processing": "در حال پرداخت",
+    "partially_paid": "پرداخت ناقص",
+    "completed": "کامل",
+    "cancelled": "لغوشده",
+    "rejected": "ردشده",
+    "failed": "ناموفق"
+  },
+  "reviewReason": {
+    "amount": "مبلغ بالاتر از آستانه",
+    "no_threshold": "ارز بدون آستانهٔ بازبینی"
+  },
+  "cols": {
+    "id": "شناسه",
+    "user": "کاربر",
+    "amount": "مبلغ",
+    "fee": "کارمزد",
+    "destination": "مقصد",
+    "reason": "دلیل بازبینی",
+    "created": "ثبت",
+    "status": "وضعیت",
+    "action": "اقدام"
+  },
+  "approve": "تأیید",
+  "reject": "رد",
+  "approveTitle": "تأیید برداشت {{id}}",
+  "approveBody": "برداشت به صف payout می‌رود و دیگر قابل لغو توسط کاربر نیست.",
+  "approved": "برداشت تأیید شد.",
+  "rejectTitle": "رد برداشت {{id}}",
+  "rejectBody": "مبلغ آزاد می‌شود و دلیل را کاربر می‌بیند.",
+  "rejected": "برداشت رد شد و مبلغ آزاد شد.",
+  "summary": "{{amount}} {{currency}} ← {{destination}}",
+  "empty": "برداشتی با این وضعیت نیست.",
+  "payout": {
+    "status": {
+      "planned": "برنامه‌ریزی‌شده",
+      "submitted": "ارسال‌شده",
+      "completed": "پرداخت‌شده",
+      "failed": "ناموفق",
+      "released": "آزاد‌شده"
+    },
+    "cols": {
+      "id": "شناسه",
+      "withdrawal": "برداشت",
+      "rail": "مسیر",
+      "amount": "مبلغ",
+      "destination": "مقصد",
+      "scheduled": "زمان",
+      "tracking": "کد رهگیری",
+      "status": "وضعیت"
+    },
+    "open": "مشاهده و ثبت نتیجه",
+    "detailTitle": "payout {{id}}",
+    "auditNote": "مشاهدهٔ مقصد کامل در لاگ ممیزی ثبت می‌شود.",
+    "destination": "مقصد کامل",
+    "memo": "memo / tag",
+    "payManually": "پرداخت را بیرون از پنل انجام دهید، سپس نتیجه را ثبت کنید.",
+    "trackingId": "کد رهگیری یا هش تراکنش",
+    "complete": "ثبت به‌عنوان پرداخت‌شده",
+    "fail": "ثبت به‌عنوان ناموفق",
+    "failReason": "دلیل شکست",
+    "completed": "payout پرداخت‌شده ثبت شد و مبلغ از دفتر کل خارج شد.",
+    "failed": "payout ناموفق ثبت شد؛ مبلغ برای مسیر بعدی برنامه‌ریزی یا آزاد می‌شود.",
+    "none": "payoutی با این وضعیت نیست.",
+    "closed": "این payout دیگر باز نیست."
+  }
+}

@@ -64,3 +64,32 @@ The panel hides what a group cannot use; the backend must enforce the same table
 | Create, change, lift a control | `POST/PATCH /admin/platform/controls`, `/lift` **S** | `platform:manage` |
 
 `markets` and `prices` are resources the panel added to the catalog in Phase 2; requirement 01 lists them.
+
+## Required level per action (Phase 3)
+
+Same convention as above. **S** needs a step-up; **2P** needs a second administrator.
+
+| Screen and action | Endpoint | Level |
+| --- | --- | --- |
+| Withdrawal review list | `GET /admin/withdrawals` | `withdrawals:view` |
+| Approve or reject a withdrawal | `POST /admin/withdrawals/{id}/approve`, `/reject` **S** | `withdrawals:approve` |
+| Payout list | `GET /admin/payouts` | `payouts:view` |
+| Payout detail (destination in the clear, read is audited), complete, fail | `GET /admin/payouts/{id}`, `POST .../complete`, `.../fail` **S** | `payouts:edit` |
+| Restrictions of a user (read) | `GET /admin/users/{hk}/restrictions` | `restrictions:request` |
+| Restrict, lift | `POST /admin/users/{hk}/restrictions`, `/{id}/lift` **S** | `restrictions:edit` |
+| Audit log | `GET /admin/audit` | `audit:view` |
+| Integrity findings | `GET /admin/integrity/findings` | `integrity:view` |
+| Reseal request and approval | `POST /admin/integrity/findings/{id}/reseal` **S 2P** | `integrity:approve` |
+| Venue state | `GET /admin/venues` | `venues:view` |
+| Clear a venue hold | `POST /admin/venues/holds/{id}/clear` **S** (2P planned, backend #521) | `venues:approve` |
+| OTC rules read, explain a route | `GET /admin/otc/routing/rules`, `POST .../explain` | `otc:view` |
+| OTC rules save | `PUT /admin/otc/routing/rules` **S** | `otc:edit` |
+| SMS routing read, save | `GET`/`PUT /admin/notifications/sms` (**S** for PUT) | `notifications:view`, `notifications:edit` |
+
+New resources the panel added to the catalog in Phase 3: `payouts`, `integrity`, `venues`, `otc`, `notifications`. Requirement 01 must list them.
+
+### What Phase 3 had to work around
+
+- **No user lookup.** The restrictions screen takes a user `hk`; searching by email needs requirement 02.
+- **The OTC rules editor is JSON**, with the backend's field-path errors shown under it, plus the "explain a route" tool. A structured editor can follow once the rules format settles.
+- **Payout destination in the clear** is shown only after an explicit click on a payout, in a dialog that says the read is audited. It is never in a list or a cache that outlives the dialog (`gcTime: 0`).

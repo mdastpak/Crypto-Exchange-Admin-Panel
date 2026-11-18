@@ -14,9 +14,17 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAccessRouteImport } from './routes/_authenticated/access'
+import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
+import { Route as AuthenticatedIntegrityRouteImport } from './routes/_authenticated/integrity'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedOtcRouteImport } from './routes/_authenticated/otc'
+import { Route as AuthenticatedPayoutsRouteImport } from './routes/_authenticated/payouts'
 import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
 import { Route as AuthenticatedPricesRouteImport } from './routes/_authenticated/prices'
+import { Route as AuthenticatedRestrictionsRouteImport } from './routes/_authenticated/restrictions'
 import { Route as AuthenticatedSessionsRouteImport } from './routes/_authenticated/sessions'
+import { Route as AuthenticatedVenuesRouteImport } from './routes/_authenticated/venues'
+import { Route as AuthenticatedWithdrawalsRouteImport } from './routes/_authenticated/withdrawals'
 import { Route as AuthenticatedCurrenciesIndexRouteImport } from './routes/_authenticated/currencies.index'
 import { Route as AuthenticatedCurrenciesHkRouteImport } from './routes/_authenticated/currencies.$hk'
 import { Route as AuthenticatedMarketsIndexRouteImport } from './routes/_authenticated/markets.index'
@@ -47,6 +55,32 @@ const AuthenticatedAccessRoute = AuthenticatedAccessRouteImport.update({
   path: '/access',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIntegrityRoute = AuthenticatedIntegrityRouteImport.update({
+  id: '/integrity',
+  path: '/integrity',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOtcRoute = AuthenticatedOtcRouteImport.update({
+  id: '/otc',
+  path: '/otc',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPayoutsRoute = AuthenticatedPayoutsRouteImport.update({
+  id: '/payouts',
+  path: '/payouts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPlatformRoute = AuthenticatedPlatformRouteImport.update({
   id: '/platform',
   path: '/platform',
@@ -57,11 +91,28 @@ const AuthenticatedPricesRoute = AuthenticatedPricesRouteImport.update({
   path: '/prices',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRestrictionsRoute =
+  AuthenticatedRestrictionsRouteImport.update({
+    id: '/restrictions',
+    path: '/restrictions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSessionsRoute = AuthenticatedSessionsRouteImport.update({
   id: '/sessions',
   path: '/sessions',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVenuesRoute = AuthenticatedVenuesRouteImport.update({
+  id: '/venues',
+  path: '/venues',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWithdrawalsRoute =
+  AuthenticatedWithdrawalsRouteImport.update({
+    id: '/withdrawals',
+    path: '/withdrawals',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCurrenciesIndexRoute =
   AuthenticatedCurrenciesIndexRouteImport.update({
     id: '/currencies/',
@@ -97,9 +148,17 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/access': typeof AuthenticatedAccessRoute
+  '/audit': typeof AuthenticatedAuditRoute
+  '/integrity': typeof AuthenticatedIntegrityRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/otc': typeof AuthenticatedOtcRoute
+  '/payouts': typeof AuthenticatedPayoutsRoute
   '/platform': typeof AuthenticatedPlatformRoute
   '/prices': typeof AuthenticatedPricesRoute
+  '/restrictions': typeof AuthenticatedRestrictionsRoute
   '/sessions': typeof AuthenticatedSessionsRoute
+  '/venues': typeof AuthenticatedVenuesRoute
+  '/withdrawals': typeof AuthenticatedWithdrawalsRoute
   '/currencies/$hk': typeof AuthenticatedCurrenciesHkRoute
   '/section/$key': typeof AuthenticatedSectionKeyRoute
   '/currencies/': typeof AuthenticatedCurrenciesIndexRoute
@@ -110,9 +169,17 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/access': typeof AuthenticatedAccessRoute
+  '/audit': typeof AuthenticatedAuditRoute
+  '/integrity': typeof AuthenticatedIntegrityRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/otc': typeof AuthenticatedOtcRoute
+  '/payouts': typeof AuthenticatedPayoutsRoute
   '/platform': typeof AuthenticatedPlatformRoute
   '/prices': typeof AuthenticatedPricesRoute
+  '/restrictions': typeof AuthenticatedRestrictionsRoute
   '/sessions': typeof AuthenticatedSessionsRoute
+  '/venues': typeof AuthenticatedVenuesRoute
+  '/withdrawals': typeof AuthenticatedWithdrawalsRoute
   '/': typeof AuthenticatedIndexRoute
   '/currencies/$hk': typeof AuthenticatedCurrenciesHkRoute
   '/section/$key': typeof AuthenticatedSectionKeyRoute
@@ -126,9 +193,17 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/_authenticated/access': typeof AuthenticatedAccessRoute
+  '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/integrity': typeof AuthenticatedIntegrityRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/otc': typeof AuthenticatedOtcRoute
+  '/_authenticated/payouts': typeof AuthenticatedPayoutsRoute
   '/_authenticated/platform': typeof AuthenticatedPlatformRoute
   '/_authenticated/prices': typeof AuthenticatedPricesRoute
+  '/_authenticated/restrictions': typeof AuthenticatedRestrictionsRoute
   '/_authenticated/sessions': typeof AuthenticatedSessionsRoute
+  '/_authenticated/venues': typeof AuthenticatedVenuesRoute
+  '/_authenticated/withdrawals': typeof AuthenticatedWithdrawalsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/currencies/$hk': typeof AuthenticatedCurrenciesHkRoute
   '/_authenticated/section/$key': typeof AuthenticatedSectionKeyRoute
@@ -143,9 +218,17 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/sign-in'
     | '/access'
+    | '/audit'
+    | '/integrity'
+    | '/notifications'
+    | '/otc'
+    | '/payouts'
     | '/platform'
     | '/prices'
+    | '/restrictions'
     | '/sessions'
+    | '/venues'
+    | '/withdrawals'
     | '/currencies/$hk'
     | '/section/$key'
     | '/currencies/'
@@ -156,9 +239,17 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/sign-in'
     | '/access'
+    | '/audit'
+    | '/integrity'
+    | '/notifications'
+    | '/otc'
+    | '/payouts'
     | '/platform'
     | '/prices'
+    | '/restrictions'
     | '/sessions'
+    | '/venues'
+    | '/withdrawals'
     | '/'
     | '/currencies/$hk'
     | '/section/$key'
@@ -171,9 +262,17 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/sign-in'
     | '/_authenticated/access'
+    | '/_authenticated/audit'
+    | '/_authenticated/integrity'
+    | '/_authenticated/notifications'
+    | '/_authenticated/otc'
+    | '/_authenticated/payouts'
     | '/_authenticated/platform'
     | '/_authenticated/prices'
+    | '/_authenticated/restrictions'
     | '/_authenticated/sessions'
+    | '/_authenticated/venues'
+    | '/_authenticated/withdrawals'
     | '/_authenticated/'
     | '/_authenticated/currencies/$hk'
     | '/_authenticated/section/$key'
@@ -225,6 +324,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccessRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/audit': {
+      id: '/_authenticated/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuthenticatedAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/integrity': {
+      id: '/_authenticated/integrity'
+      path: '/integrity'
+      fullPath: '/integrity'
+      preLoaderRoute: typeof AuthenticatedIntegrityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/otc': {
+      id: '/_authenticated/otc'
+      path: '/otc'
+      fullPath: '/otc'
+      preLoaderRoute: typeof AuthenticatedOtcRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payouts': {
+      id: '/_authenticated/payouts'
+      path: '/payouts'
+      fullPath: '/payouts'
+      preLoaderRoute: typeof AuthenticatedPayoutsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/platform': {
       id: '/_authenticated/platform'
       path: '/platform'
@@ -239,11 +373,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPricesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/restrictions': {
+      id: '/_authenticated/restrictions'
+      path: '/restrictions'
+      fullPath: '/restrictions'
+      preLoaderRoute: typeof AuthenticatedRestrictionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sessions': {
       id: '/_authenticated/sessions'
       path: '/sessions'
       fullPath: '/sessions'
       preLoaderRoute: typeof AuthenticatedSessionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/venues': {
+      id: '/_authenticated/venues'
+      path: '/venues'
+      fullPath: '/venues'
+      preLoaderRoute: typeof AuthenticatedVenuesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/withdrawals': {
+      id: '/_authenticated/withdrawals'
+      path: '/withdrawals'
+      fullPath: '/withdrawals'
+      preLoaderRoute: typeof AuthenticatedWithdrawalsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/currencies/': {
@@ -286,9 +441,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccessRoute: typeof AuthenticatedAccessRoute
+  AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedIntegrityRoute: typeof AuthenticatedIntegrityRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedOtcRoute: typeof AuthenticatedOtcRoute
+  AuthenticatedPayoutsRoute: typeof AuthenticatedPayoutsRoute
   AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
   AuthenticatedPricesRoute: typeof AuthenticatedPricesRoute
+  AuthenticatedRestrictionsRoute: typeof AuthenticatedRestrictionsRoute
   AuthenticatedSessionsRoute: typeof AuthenticatedSessionsRoute
+  AuthenticatedVenuesRoute: typeof AuthenticatedVenuesRoute
+  AuthenticatedWithdrawalsRoute: typeof AuthenticatedWithdrawalsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedCurrenciesHkRoute: typeof AuthenticatedCurrenciesHkRoute
   AuthenticatedSectionKeyRoute: typeof AuthenticatedSectionKeyRoute
@@ -299,9 +462,17 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccessRoute: AuthenticatedAccessRoute,
+  AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedIntegrityRoute: AuthenticatedIntegrityRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedOtcRoute: AuthenticatedOtcRoute,
+  AuthenticatedPayoutsRoute: AuthenticatedPayoutsRoute,
   AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
   AuthenticatedPricesRoute: AuthenticatedPricesRoute,
+  AuthenticatedRestrictionsRoute: AuthenticatedRestrictionsRoute,
   AuthenticatedSessionsRoute: AuthenticatedSessionsRoute,
+  AuthenticatedVenuesRoute: AuthenticatedVenuesRoute,
+  AuthenticatedWithdrawalsRoute: AuthenticatedWithdrawalsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedCurrenciesHkRoute: AuthenticatedCurrenciesHkRoute,
   AuthenticatedSectionKeyRoute: AuthenticatedSectionKeyRoute,

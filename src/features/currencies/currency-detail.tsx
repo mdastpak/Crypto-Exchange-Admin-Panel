@@ -7,6 +7,7 @@ import { api } from '@/api/client'
 import type { Currency, CurrencyStatus } from '@/api/models'
 import { useCan } from '@/auth/permissions'
 import { conflictVersion, describeError } from '@/lib/errors'
+import { AuditLink } from '@/components/audit-link'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DateTime } from '@/components/date-time'
 import { Main } from '@/components/layout/main'
@@ -93,6 +94,7 @@ export function CurrencyDetail({ hk }: { hk: string }) {
                   <div><span className='text-muted-foreground'>{t('form.contract')}: </span><bdi dir='ltr' className='font-mono text-xs break-all'>{c.info.contract || '—'}</bdi></div>
                   <div><span className='text-muted-foreground'>{t('detail.createdAt')}: </span><DateTime value={c.created_at} /></div>
                   <div><span className='text-muted-foreground'>{t('cols.updated')}: </span><DateTime value={c.updated_at} /></div>
+                  <div><AuditLink targetType='currency' targetId={c.hk} /></div>
                   {!!c.previous_symbols?.length && <div><span className='text-muted-foreground'>{t('detail.previousSymbols')}: </span><bdi dir='ltr'>{c.previous_symbols.join(', ')}</bdi></div>}
                 </CardContent></Card>
               </TabsContent>

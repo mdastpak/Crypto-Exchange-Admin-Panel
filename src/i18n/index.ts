@@ -5,6 +5,12 @@ import currencies from './locales/fa/currencies.json'
 import dashboard from './locales/fa/dashboard.json'
 import markets from './locales/fa/markets.json'
 import platform from './locales/fa/platform.json'
+import audit from './locales/fa/audit.json'
+import integrity from './locales/fa/integrity.json'
+import restrictions from './locales/fa/restrictions.json'
+import sms from './locales/fa/sms.json'
+import venues from './locales/fa/venues.json'
+import withdrawals from './locales/fa/withdrawals.json'
 import auth from './locales/fa/auth.json'
 import common from './locales/fa/common.json'
 import errors from './locales/fa/errors.json'
@@ -21,7 +27,7 @@ export const SUPPORTED_LOCALES = [
 
 export type LocaleCode = (typeof SUPPORTED_LOCALES)[number]['code']
 export const DEFAULT_LOCALE: LocaleCode = 'fa'
-export const NAMESPACES = ['common', 'auth', 'nav', 'errors', 'access', 'session', 'currencies', 'markets', 'platform', 'dashboard'] as const
+export const NAMESPACES = ['common', 'auth', 'nav', 'errors', 'access', 'session', 'currencies', 'markets', 'platform', 'dashboard', 'withdrawals', 'restrictions', 'audit', 'integrity', 'venues', 'sms'] as const
 
 export function dirOf(code: string): 'rtl' | 'ltr' {
   return SUPPORTED_LOCALES.find((l) => l.code === code)?.dir ?? 'ltr'
@@ -33,7 +39,7 @@ export function applyLocale(code: string) {
 }
 
 void i18n.use(initReactI18next).init({
-  resources: { fa: { common, auth, nav, errors, access, session, currencies, markets, platform, dashboard } },
+  resources: { fa: { common, auth, nav, errors, access, session, currencies, markets, platform, dashboard, withdrawals, restrictions, audit, integrity, venues, sms } },
   lng: DEFAULT_LOCALE,
   fallbackLng: DEFAULT_LOCALE,
   ns: [...NAMESPACES],

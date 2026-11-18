@@ -8,6 +8,7 @@ import { ApiError } from '@/api/types'
 import { useCan } from '@/auth/permissions'
 import { describeError } from '@/lib/errors'
 import { bpsToPercent, price } from '@/lib/format'
+import { AuditLink } from '@/components/audit-link'
 import { DateTime } from '@/components/date-time'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
@@ -54,7 +55,7 @@ export function MarketDetail({ base, quote }: { base: string; quote: string }) {
                   <div><span className='text-muted-foreground'>{t('form.maker')}: </span><bdi dir='ltr'>{m.maker_fee_bps} ({bpsToPercent(m.maker_fee_bps)})</bdi></div>
                   <div><span className='text-muted-foreground'>{t('form.taker')}: </span><bdi dir='ltr'>{m.taker_fee_bps} ({bpsToPercent(m.taker_fee_bps)})</bdi></div>
                   <div><span className='text-muted-foreground'>{t('common:status')}: </span><DateTime value={m.updated_at} /></div>
-                  {canEdit && <div className='sm:col-span-2'><Button onClick={() => setEditing(true)}>{t('common:edit')}</Button></div>}
+                  <div className='flex items-center gap-4 sm:col-span-2'>{canEdit && <Button onClick={() => setEditing(true)}>{t('common:edit')}</Button>}<AuditLink targetType='market' targetId={symbol} /></div>
                 </CardContent>
               </Card>
             </TabsContent>

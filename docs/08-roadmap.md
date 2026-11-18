@@ -36,6 +36,24 @@ Not verified here: calls against a running backend. The `http` transport and the
 
 Not in Phase 2: scheduling a migration, delisting settlement and notices views, forms for the less common market fields (`price_band_bps`, `max_leverage`), and the audit link on each detail page (Phase 3 with the audit log).
 
+## Phase 3 status
+
+Built against the documented backend API, run in mock mode with the same rules, and covered by 49 tests plus a browser run of the main flows:
+
+- **Withdrawals:** review queue with status filter, approve (confirmation that repeats amount and destination) and reject (reason).
+- **Payouts:** list by status, a detail dialog that shows the destination in the clear (the read is audited), record as paid with a tracking id, or as failed with a reason; a payout is never recorded twice.
+- **Restrictions:** per user, create (operation, asset, or account freeze with the warning that sessions end) and lift with a note and version check.
+- **Audit log:** filters, cursor paging, and an event dialog with before and after values and the integrity status. Currency and market pages link to it.
+- **Integrity:** open or all findings, reseal request and second-administrator approval; the approver sees what the first one pinned, and cannot approve their own request.
+- **Venues:** state, snapshot freshness, balances with routability, and reconciliation holds with clear.
+- **OTC routing:** rules as versioned JSON with backend field errors, and route explanation.
+- **SMS routing:** provider health, auto or manual mode, and an editable order.
+- **Dashboard:** tiles for withdrawals in review, submitted payouts, and open integrity findings.
+
+Not verified here: calls against a running backend, as in Phase 2.
+
+Not in Phase 3: the market-data catalog screens (assets, conflicts, jobs, pairs, sources, venues of `/admin/market-data/*`), the delisting settlement and notices views, a structured OTC rule editor, and the user-facing details of a withdrawal (its payouts, history). They move to Phase 4 with the modules that need new backend work.
+
 ## Definition of done for any screen
 
 - Permission declared and tested (visible and hidden).

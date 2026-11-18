@@ -8,5 +8,8 @@
   "viewAll": "مشاهده",
   "none": "هیچ",
   "noAccess": "برای نمایش این بخش دسترسی ندارید.",
-  "welcome": "خلاصهٔ عملیات"
+  "welcome": "خلاصهٔ عملیات",
+  "withdrawalsReview": "برداشت منتظر بازبینی",
+  "integrityOpen": "یافتهٔ باز یکپارچگی",
+  "submittedPayouts": "payout ارسال‌شده"
 }

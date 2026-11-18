@@ -3,7 +3,7 @@
 The back-office web application for the [Crypto Exchange](https://github.com/mdastpak/Crypto-Exchange) backend.
 Staff use it to run currencies and markets, review withdrawals, operate OTC routing, restrict users, lock the platform, and read the audit log.
 
-**Status:** Phase 1 (foundation) and Phase 2 (dashboard, currencies and lifecycle, markets and prices, platform controls) are built. See [docs/08-roadmap.md](docs/08-roadmap.md).
+**Status:** Phases 1 to 3 are built: foundation, operations (currencies, markets, prices, platform), and money flow (withdrawals, payouts, restrictions, audit, integrity, venues, OTC routing, SMS). See [docs/08-roadmap.md](docs/08-roadmap.md).
 
 | Area | Choice |
 | --- | --- |

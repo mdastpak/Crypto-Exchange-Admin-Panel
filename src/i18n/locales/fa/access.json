@@ -36,7 +36,12 @@
     "audit": "لاگ ممیزی",
     "access": "مدیریت دسترسی",
     "markets": "بازارها",
-    "prices": "قیمت مرجع"
+    "prices": "قیمت مرجع",
+    "payouts": "payoutها",
+    "integrity": "یکپارچگی",
+    "venues": "venueها",
+    "otc": "مسیریابی OTC",
+    "notifications": "مسیریابی پیامک"
   },
   "groups": {
     "support_agent": "پشتیبانی",

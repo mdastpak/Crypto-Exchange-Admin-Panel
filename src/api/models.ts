@@ -192,3 +192,190 @@ export interface Migration {
   version: number
   created_at: string
 }
+
+/* ---------- Phase 3: money flow ---------- */
+
+export type WithdrawalStatus = 'review' | 'queued' | 'processing' | 'partially_paid' | 'completed' | 'cancelled' | 'rejected' | 'failed'
+export type PayoutStatus = 'planned' | 'submitted' | 'completed' | 'failed' | 'released'
+
+export interface Payout {
+  id: string
+  withdrawal_id: string
+  user_hk: string
+  seq: number
+  rail: 'card' | 'paya' | 'satna' | 'pol' | 'account' | 'chain'
+  currency: string
+  network?: string
+  amount: string
+  fee: string
+  status: PayoutStatus
+  destination: string // masked
+  destination_kind: 'card' | 'iban' | 'account' | 'crypto'
+  scheduled_for?: string
+  tracking_id?: string
+  last_error?: string
+  attempts: number
+  submitted_at?: string
+  completed_at?: string
+  failed_at?: string
+}
+/** The detail shows the destination in the clear; reading it is audited by the backend. */
+export interface PayoutDetail extends Payout {
+  destination_value?: string
+  destination_memo?: string
+}
+
+export interface Withdrawal {
+  id: string
+  user_hk: string
+  currency_hk: string
+  currency: string
+  network: string
+  destination_id: string
+  destination: string // masked
+  amount: string
+  fee: string
+  total: string
+  status: WithdrawalStatus
+  review_reason?: 'amount' | 'no_threshold'
+  reviewed_at?: string
+  reason?: string
+  payouts?: Payout[]
+  created_at: string
+  updated_at: string
+}
+
+export type RestrictionScope = 'account' | 'operation' | 'asset'
+export type RestrictionOperation = 'deposit' | 'withdraw' | 'convert' | 'buy' | 'sell' | 'trade'
+export const RESTRICTION_OPERATIONS: RestrictionOperation[] = ['deposit', 'withdraw', 'convert', 'buy', 'sell', 'trade']
+export type RestrictionReason = 'court_order' | 'aml_review' | 'sanctions' | 'fraud' | 'security' | 'user_request' | 'other'
+export const RESTRICTION_REASONS: RestrictionReason[] = ['court_order', 'aml_review', 'sanctions', 'fraud', 'security', 'user_request', 'other']
+
+export interface Restriction {
+  id: string
+  user_hk: string
+  scope: RestrictionScope
+  currency_hk?: string
+  operations?: RestrictionOperation[]
+  reason: RestrictionReason
+  case_ref?: string
+  note?: string
+  ends_at?: string
+  active: boolean
+  version: number
+  created_by: string
+  created_at: string
+  lifted_at?: string
+  lifted_by?: string
+  lift_note?: string
+}
+
+export interface AuditEntry {
+  hk: string
+  occurred_at: string
+  actor_type: string
+  actor_id: string
+  action: string
+  target_type?: string
+  target_id?: string
+  outcome: 'success' | 'failure' | 'denied'
+  reason?: string
+  request_id?: string
+  ip?: string
+  user_agent?: string
+  changes?: { before?: Record<string, unknown>; after?: Record<string, unknown> }
+  integrity: 'verified' | 'mismatch' | 'unsealed' | 'unchecked'
+}
+
+export interface IntegrityFinding {
+  id: number
+  table: string
+  row_key: string
+  check: 'missing' | 'mismatch' | 'unknown_key' | 'row_missing'
+  detected_by: 'read' | 'verifier'
+  detected_at: string
+  last_seen_at: string
+  seen_count: number
+  resolution?: 'resealed' | 'report_mode' | 'row_gone'
+  resolved_at?: string
+  resolved_by?: string
+  reason?: string
+  reseal_requested_by?: string
+  reseal_requested_at?: string
+  reseal_request_reason?: string
+  reseal_row_version?: number
+  reseal_values?: Record<string, unknown>
+}
+
+export interface VenueHold {
+  id: string
+  venue: string
+  asset: string
+  currency_hk: string
+  booked: number
+  reported: number
+  difference: number
+  detected_at: string
+  cleared_at?: string
+  cleared_by?: string
+  clear_reason?: string
+}
+export interface VenueBalance {
+  asset: string
+  currency: string
+  free: number
+  locked: number
+  reserved: number
+  available: number
+  booked: number
+  difference: number
+  mismatch_runs: number
+  taken_at: string
+  routability: 'routable' | 'held' | 'stale' | 'unverified'
+  reasons?: string[]
+}
+export interface VenueState {
+  venue: string
+  snapshots: { kind: string; taken_at: string; fresh: boolean; failed_at?: string; failure?: string }[]
+  balances: VenueBalance[]
+  instruments: number
+  trading: number
+  holds: VenueHold[]
+}
+
+export interface RoutingVenueRule { venue: string; priority?: number; weight?: number; max_balance_share_bps?: number; reserve?: string; max_daily_notional?: string }
+export interface RoutingRule {
+  name: string
+  priority?: number
+  markets?: string[]
+  sides?: string[]
+  networks?: string[]
+  regions?: string[]
+  min_notional?: string
+  max_notional?: string
+  min_level?: number
+  strategy?: string
+  use_inventory?: boolean
+  max_cost_bps?: number
+  venues?: RoutingVenueRule[]
+}
+export interface RoutingRulesView {
+  enabled: boolean
+  cache_seconds: number
+  version?: { version: number; rules: RoutingRule[]; reason: string; created_by: string; created_at: string }
+}
+export interface RouteExplanation {
+  rule_version: number
+  rules: { rule: string; matched: boolean; skipped?: string[]; failure?: string; sources?: { source: string; venue?: string; capacity: number; cost_bps: number; skipped?: string[] }[] }[]
+  route?: { rule: string; network?: string; cost_bps: number; legs: { source: string; venue?: string; symbol: string; quantity: number; notional: number; cost_bps: number }[] }
+  reason?: string
+}
+
+export interface SmsStatus {
+  mode: 'auto' | 'manual'
+  order?: string[]
+  effective_order: string[]
+  delivery_reports: boolean
+  window_minutes: number
+  providers: { name: string; templates: string[]; healthy: boolean; breaker_open_until?: string; accepted: number; provider_errors: number; delivered: number; failed: number }[]
+}
