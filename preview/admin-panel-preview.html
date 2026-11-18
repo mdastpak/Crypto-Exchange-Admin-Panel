@@ -1,0 +1,314 @@
+<title>Exchange Admin Preview</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap">
+<style>
+/* Layout: fixed sidebar + header with role switcher; content area scrolls. RTL first. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#18232d; --muted:#5d6b78; --line:#dde3e8;
+  --accent:#1f6f8b; --accent-ink:#ffffff; --accent-soft:#e1f0f5;
+  --ok:#1b7f4b; --ok-soft:#e0f3e8; --warn:#9a6200; --warn-soft:#fbefd2; --bad:#b3261e; --bad-soft:#fbe3e1;
+  --side:#14212b; --side-ink:#d3dde5; --side-dim:#8397a6;
+  --f-body:'Vazirmatn',system-ui,Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --panel:#18222b; --ink:#e6edf2; --muted:#9aabb8; --line:#2a3945;
+  --accent:#58b4d1; --accent-ink:#06222c; --accent-soft:#18323d;
+  --ok:#5fcf93; --ok-soft:#173526; --warn:#e5b04a; --warn-soft:#3a2d12; --bad:#ff8a80; --bad-soft:#40201e;
+  --side:#0a1117; --side-ink:#c5d2dc; --side-dim:#7a8e9d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --panel:#18222b; --ink:#e6edf2; --muted:#9aabb8; --line:#2a3945;
+  --accent:#58b4d1; --accent-ink:#06222c; --accent-soft:#18323d;
+  --ok:#5fcf93; --ok-soft:#173526; --warn:#e5b04a; --warn-soft:#3a2d12; --bad:#ff8a80; --bad-soft:#40201e;
+  --side:#0a1117; --side-ink:#c5d2dc; --side-dim:#7a8e9d; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.7 var(--f-body);padding-left:0;padding-right:0}
+button,input,select{font:inherit;color:inherit}
+bdi,.ltr{unicode-bidi:isolate;direction:ltr;display:inline-block}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* shell */
+#app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100%}
+aside{background:var(--side);color:var(--side-ink);padding:16px 12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{font-weight:700;font-size:16px;padding:6px 10px 14px;color:#fff;display:flex;gap:8px;align-items:center}
+.brand i{width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block}
+.navgrp{font-size:11px;color:var(--side-dim);padding:12px 10px 4px;letter-spacing:.02em}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:start;background:none;border:0;color:inherit;padding:8px 10px;border-radius:6px;cursor:pointer}
+.nav:hover{background:rgba(255,255,255,.07)}
+.nav[aria-current="page"]{background:rgba(255,255,255,.13);color:#fff}
+.tag{font-size:10px;padding:0 6px;border-radius:9px;background:rgba(255,255,255,.14);color:var(--side-ink);white-space:nowrap}
+main{min-width:0;display:flex;flex-direction:column}
+header{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:10px 24px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header .who{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+.content{padding:24px;display:flex;flex-direction:column;gap:20px;max-width:1180px;width:100%}
+h1{font-size:20px;margin:0}
+h2{font-size:15px;margin:0 0 10px}
+.sub{color:var(--muted);margin:2px 0 0}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.k{color:var(--muted);font-size:12px}
+.v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:9px 12px;text-align:start;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:500;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:0 9px;border-radius:10px;font-size:12px;background:var(--accent-soft);color:var(--accent)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.mock{font-size:11px;border:1px dashed var(--warn);color:var(--warn);border-radius:4px;padding:0 6px;margin-inline-start:8px;vertical-align:middle}
+button.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:6px 14px;cursor:pointer}
+button.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.btn.bad{background:var(--bad);color:#fff}
+button.btn[disabled]{opacity:.45;cursor:not-allowed}
+input[type=text],input[type=email],input[type=password]{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.note{background:var(--accent-soft);border-radius:6px;padding:8px 12px;font-size:13px}
+.note.warn{background:var(--warn-soft);color:var(--ink)}
+.locked{display:flex;gap:8px;align-items:center;color:var(--muted)}
+
+/* login */
+#login{display:grid;place-items:center;min-height:100%;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.lbox{width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px}
+.steps{display:flex;gap:6px}.steps b{flex:1;height:4px;border-radius:2px;background:var(--line)}.steps b.on{background:var(--accent)}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(5,12,18,.55);display:grid;place-items:center;padding:16px;z-index:20}
+.modal{background:var(--panel);border-radius:10px;width:100%;max-width:440px;padding:20px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--line)}
+.err{color:var(--bad);font-size:12.5px;min-height:18px}
+.toast{position:fixed;inset-inline-start:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;z-index:30}
+
+/* matrix */
+.mx td,.mx th{text-align:center;padding:6px 8px}.mx td:first-child,.mx th:first-child{text-align:start}
+.mx .y{color:var(--ok);font-weight:700}.mx .s{color:var(--warn);font-weight:700}
+
+@media (max-width:820px){
+  #app{grid-template-columns:minmax(0,1fr)}
+  aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:2px}
+  .navgrp{display:none}.brand{width:100%}
+  .nav{width:auto}
+  header{padding:10px 16px}.content{padding:16px}
+}
+@media (prefers-reduced-motion:no-preference){.card,.nav{transition:background .15s}}
+</style>
+
+<div id="root"></div>
+
+<script>
+/* ---------- data ---------- */
+const T = {
+  roles:{
+    super_admin:'سوپر ادمین', catalog_admin:'ادمین ارزها و بازارها', trading_admin:'ادمین معاملات OTC',
+    finance_analyst:'کارشناس مالی', finance_manager:'مدیر مالی', support_agent:'پشتیبانی',
+    ticket_agent:'تیکتینگ', compliance_officer:'کارشناس KYC', auditor:'ناظر'
+  },
+  views:{dashboard:'داشبورد',currencies:'ارزها',withdrawals:'برداشت‌ها',users:'کاربران و KYC',platform:'کنترل پلتفرم',tickets:'تیکت‌ها',audit:'لاگ ممیزی',roles:'نقش‌ها و دسترسی'},
+  group:{dashboard:'عملیات',currencies:'عملیات',withdrawals:'مالی',users:'کاربران',platform:'سیستم',tickets:'کاربران',audit:'سیستم',roles:'سیستم'},
+  mock:{users:1,tickets:1,roles:1}
+};
+// view access per role, and action permissions
+const ACCESS={
+  super_admin:['dashboard','currencies','withdrawals','users','platform','tickets','audit','roles'],
+  catalog_admin:['dashboard','currencies','audit'],
+  trading_admin:['dashboard','currencies','audit'],
+  finance_analyst:['dashboard','currencies','withdrawals','audit'],
+  finance_manager:['dashboard','currencies','withdrawals','audit'],
+  support_agent:['dashboard','currencies','users','tickets'],
+  ticket_agent:['dashboard','tickets'],
+  compliance_officer:['dashboard','withdrawals','users'],
+  auditor:['dashboard','currencies','withdrawals','users','tickets','audit','roles']
+};
+const CAN={
+  'withdrawals:decide':['finance_manager'],
+  'platform:write':['super_admin'],
+  'currencies:write':['super_admin','catalog_admin']
+};
+const can=p=>(CAN[p]||[]).includes(S.role);
+
+let S={role:'finance_manager',view:'dashboard',authed:false,step:0,elevated:0,lang:'fa',
+  withdrawals:[
+    {id:'w-1042',user:'u_8f3a…c1',cur:'USDT',net:'tron',amt:'25000.00',dest:'TQn9…x7Zp',st:'review',why:'بالاتر از آستانه بازبینی'},
+    {id:'w-1041',user:'u_21bd…90',cur:'BTC',net:'bitcoin',amt:'1.250000',dest:'bc1q…f2k9',st:'review',why:'مقصد جدید (کمتر از ۲۴ ساعت)'},
+    {id:'w-1039',user:'u_77ce…4a',cur:'ETH',net:'ethereum',amt:'18.4000',dest:'0x9aE…03b1',st:'review',why:'بالاتر از آستانه بازبینی'},
+    {id:'w-1036',user:'u_b02a…5d',cur:'USDT',net:'tron',amt:'4200.00',dest:'TLp2…a9Qd',st:'paid',why:''}
+  ],
+  controls:[
+    {id:'c1',feature:'برداشت',kind:'قفل ویژگی',until:'۱۴۰۵/۰۹/۰۲ ۱۸:۰۰',req:'sara@…',state:'lift_requested'},
+    {id:'c2',feature:'کل سرویس',kind:'تعمیرات',until:'برنامه‌ریزی‌شده',req:'—',state:'scheduled'}
+  ],
+  audit:[
+    ['۰۹:۱۲','admin.step_up','ali@…','موفق'],['۰۹:۱۰','admin.sign_in','ali@…','موفق'],
+    ['۰۸:۵۴','currency.update','nima@…','موفق'],['۰۸:۴۰','withdrawal.approve','reza@…','موفق'],
+    ['۰۸:۳۱','admin.sign_in','ناشناس','ردشده'],['۰۸:۰۲','platform.control_create','sara@…','موفق']
+  ],
+  currencies:[
+    ['BTC','Bitcoin','active','bitcoin'],['ETH','Ethereum','active','ethereum'],['USDT','Tether','active','tron, ethereum'],
+    ['LUNA','Terra','pending','terra'],['LUNC','Terra Classic','delisting','terra-classic']
+  ]
+};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),2600)}
+
+/* ---------- login ---------- */
+function loginView(){
+  const st=S.step;
+  const body=[
+   `<div><label for="em">ایمیل</label><input id="em" type="email" value="ali@exchange.example" dir="ltr"></div>
+    <p class="sub">برای هر ایمیل پاسخ یکسان نمایش داده می‌شود؛ وجود یا نبود حساب لو نمی‌رود.</p>`,
+   `<div><label for="oc">کد ارسال‌شده به ایمیل</label><input id="oc" type="text" inputmode="numeric" maxlength="6" dir="ltr" placeholder="123456"></div>
+    <div><label for="tp">کد برنامهٔ احراز هویت (TOTP)</label><input id="tp" type="text" inputmode="numeric" maxlength="6" dir="ltr" placeholder="654321"></div>
+    <p class="sub">ارقام فارسی و عربی هم پذیرفته می‌شوند. در این پیش‌نمایش هر کد ۶ رقمی معتبر است.</p>`
+  ][st];
+  return `<div id="login"><div class="lbox card">
+    <div class="brand" style="color:var(--ink);padding:0"><i></i> پنل مدیریت صرافی</div>
+    <div class="steps"><b class="${st>=0?'on':''}"></b><b class="${st>=1?'on':''}"></b></div>
+    ${body}<div class="err" id="lerr"></div>
+    <button class="btn" id="lgo">${st?'ورود':'ارسال کد'}</button>
+    <div class="note warn">توکن فقط در حافظه می‌ماند. با بازنشانی صفحه یا ۱۵ دقیقه بی‌فعالیتی از حساب خارج می‌شوید.</div>
+  </div></div>`;
+}
+function bindLogin(){
+  $('#lgo').onclick=()=>{
+    const fa=s=>s.replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+    if(S.step===0){S.step=1;render();return}
+    const a=fa($('#oc').value),b=fa($('#tp').value);
+    if(!/^\d{6}$/.test(a)||!/^\d{6}$/.test(b)){$('#lerr').textContent='کد نامعتبر یا منقضی است.';return}
+    S.authed=true;S.step=0;S.elevated=Date.now()+5*60000;render();
+  };
+}
+
+/* ---------- step-up modal ---------- */
+function stepUp(then){
+  if(Date.now()<S.elevated){then();return}
+  const m=document.createElement('div');m.className='scrim';
+  m.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="sut">
+    <h2 id="sut">تأیید مجدد هویت</h2>
+    <p class="sub">این عملیات حساس است (<span class="ltr mono">403 step_up_required</span>). کد تازهٔ برنامهٔ احراز هویت را وارد کنید.</p>
+    <div><label for="su">کد ۶ رقمی</label><input id="su" type="text" inputmode="numeric" maxlength="6" dir="ltr"></div>
+    <div class="err" id="suerr"></div>
+    <div class="row"><button class="btn" id="suok">تأیید</button><button class="btn ghost" id="sucancel">انصراف</button></div></div>`;
+  document.body.appendChild(m);$('#su').focus();
+  $('#sucancel').onclick=()=>m.remove();
+  $('#suok').onclick=()=>{
+    if(!/^\d{6}$/.test($('#su').value)){$('#suerr').textContent='کد اشتباه است یا قبلاً استفاده شده.';return}
+    S.elevated=Date.now()+5*60000;m.remove();render();then();
+  };
+}
+function reasonDialog(title,confirmLabel,danger,done){
+  const m=document.createElement('div');m.className='scrim';
+  m.innerHTML=`<div class="modal" role="dialog" aria-modal="true"><h2>${esc(title)}</h2>
+    <div><label for="rs">دلیل (الزامی، حداکثر ۱۰۰۰ نویسه)</label><input id="rs" type="text" maxlength="1000"></div>
+    <div class="err" id="rserr"></div>
+    <div class="row"><button class="btn ${danger?'bad':''}" id="rsok">${esc(confirmLabel)}</button><button class="btn ghost" id="rscancel">انصراف</button></div></div>`;
+  document.body.appendChild(m);$('#rs').focus();
+  $('#rscancel').onclick=()=>m.remove();
+  $('#rsok').onclick=()=>{
+    const v=$('#rs').value.trim();if(!v){$('#rserr').textContent='دلیل لازم است.';return}
+    m.remove();stepUp(()=>done(v));
+  };
+}
+
+/* ---------- views ---------- */
+const pill=(t,c)=>`<span class="pill ${c||''}">${esc(t)}</span>`;
+const mockTag=v=>T.mock[v]?'<span class="mock">داده نمونه — API هنوز وجود ندارد</span>':'';
+const V={
+  dashboard(){
+    const pend=S.withdrawals.filter(w=>w.st==='review').length;
+    return `<div class="grid">
+      <div class="card"><div class="k">برداشت در انتظار بازبینی</div><div class="v">${pend}</div></div>
+      <div class="card"><div class="k">یافتهٔ باز یکپارچگی</div><div class="v">0</div></div>
+      <div class="card"><div class="k">قیمت‌یاب</div><div class="v" style="color:var(--ok)">سالم</div></div>
+      <div class="card"><div class="k">venueهای قدیمی</div><div class="v">0</div></div>
+    </div>
+    <div class="card"><h2>وضعیت پلتفرم</h2><div class="row">${pill('در حال سرویس','ok')}${pill('۱ قفل ویژگی فعال','warn')}${pill('۱ تعمیرات برنامه‌ریزی‌شده')}</div></div>
+    <div class="card"><h2>حجم و کاربران ${mockTag('users')}</h2><div class="row"><span class="k">حجم OTC ۲۴ ساعته</span><b class="num"><bdi>1,840,213.55 USDT</bdi></b><span class="k">کاربر جدید</span><b>۱۱۲</b></div></div>`;
+  },
+  currencies(){
+    return `<div class="tbl"><table><thead><tr><th>نماد</th><th>نام</th><th>وضعیت</th><th>شبکه‌ها</th><th></th></tr></thead><tbody>${
+      S.currencies.map(c=>`<tr><td><bdi><b>${c[0]}</b></bdi></td><td><bdi>${c[1]}</bdi></td><td>${pill(c[2]==='active'?'فعال':c[2]==='pending'?'در انتظار':'در حال حذف از فهرست',c[2]==='active'?'ok':c[2]==='pending'?'':'warn')}</td><td><bdi>${c[3]}</bdi></td>
+      <td><button class="btn ghost" ${can('currencies:write')?'':'disabled title="دسترسی ندارید"'}>ویرایش</button></td></tr>`).join('')}</tbody></table></div>
+      <div class="note">ویرایش با نسخه (version) ارسال می‌شود؛ در تداخل، خطای <span class="ltr mono">version_conflict</span> و بارگذاری دوبارهٔ فرم.</div>`;
+  },
+  withdrawals(){
+    return `<div class="tbl"><table><thead><tr><th>شناسه</th><th>ارز</th><th>مبلغ</th><th>مقصد</th><th>دلیل بازبینی</th><th>وضعیت</th><th>اقدام</th></tr></thead><tbody>${
+     S.withdrawals.map(w=>`<tr><td><bdi class="mono">${w.id}</bdi></td><td><bdi>${w.cur}/${w.net}</bdi></td><td class="num"><bdi>${w.amt}</bdi></td><td><bdi class="mono">${w.dest}</bdi></td><td>${esc(w.why)}</td>
+     <td>${pill(w.st==='review'?'در انتظار':w.st==='paid'?'پرداخت‌شده':w.st==='approved'?'تأییدشده':'ردشده',w.st==='review'?'warn':w.st==='rejected'?'bad':'ok')}</td>
+     <td>${w.st==='review'?`<span class="row"><button class="btn" data-a="${w.id}" ${can('withdrawals:decide')?'':'disabled title="فقط مدیر مالی"'}>تأیید</button><button class="btn ghost" data-r="${w.id}" ${can('withdrawals:decide')?'':'disabled title="فقط مدیر مالی"'}>رد</button></span>`:''}</td></tr>`).join('')}</tbody></table></div>
+     <div class="note">کارشناس مالی و ناظر فقط می‌بینند؛ تصمیم‌گیری برای مدیر مالی است و هر تصمیم نیاز به تأیید مجدد هویت و دلیل دارد.</div>`;
+  },
+  users(){
+    return `<div class="card row"><div style="flex:1;min-width:200px"><label for="uq">جست‌وجو با ایمیل یا موبایل (تطابق دقیق)</label><input id="uq" type="text" dir="ltr" placeholder="user@example.com"></div><button class="btn" id="ubtn">جست‌وجو</button></div>
+    <div class="tbl"><table><thead><tr><th>کاربر</th><th>ایمیل</th><th>سطح</th><th>وضعیت</th><th>KYC</th></tr></thead><tbody>
+      <tr><td><bdi class="mono">u_8f3a…c1</bdi></td><td><bdi>a***@gmail.com</bdi></td><td>۲</td><td>${pill('فعال','ok')}</td><td>${pill('تأییدشده','ok')}</td></tr>
+      <tr><td><bdi class="mono">u_21bd…90</bdi></td><td><bdi>m***@proton.me</bdi></td><td>۱</td><td>${pill('فعال','ok')}</td><td>${pill('در بازبینی','warn')}</td></tr>
+      <tr><td><bdi class="mono">u_77ce…4a</bdi></td><td><bdi>r***@yahoo.com</bdi></td><td>۳</td><td>${pill('محدود','bad')}</td><td>${pill('تأییدشده','ok')}</td></tr></tbody></table></div>
+    <div class="note">اطلاعات شخصی در فهرست ماسک است. نمایش کامل نیاز به دسترسی ویژه، تأیید مجدد هویت و ثبت دلیل دارد و در لاگ ممیزی ثبت می‌شود.</div>`;
+  },
+  platform(){
+    return `<div class="card"><h2>کنترل‌های فعال</h2></div><div class="tbl"><table><thead><tr><th>ویژگی</th><th>نوع</th><th>تا</th><th>درخواست‌کننده</th><th>وضعیت</th><th></th></tr></thead><tbody>${
+     S.controls.map(c=>`<tr><td>${c.feature}</td><td>${c.kind}</td><td>${c.until}</td><td><bdi>${c.req}</bdi></td><td>${pill(c.state==='lift_requested'?'منتظر تأیید دوم':c.state==='lifted'?'برداشته شد':'برنامه‌ریزی‌شده',c.state==='lift_requested'?'warn':'')}</td>
+     <td>${c.state==='lift_requested'?`<button class="btn" data-lift="${c.id}" ${can('platform:write')?'':'disabled'}>تأیید رفع به‌عنوان نفر دوم</button>`:''}</td></tr>`).join('')}</tbody></table></div>
+    <div class="row"><button class="btn bad" id="newctl" ${can('platform:write')?'':'disabled title="فقط سوپر ادمین"'}>قفل ویژگی یا تعمیرات جدید</button></div>
+    <div class="note">درخواست‌کنندهٔ رفع قفل نمی‌تواند خودش تأیید کند (<span class="ltr mono">second_approval_required</span>). در این نمونه، شما نفر دوم هستید.</div>`;
+  },
+  tickets(){
+    return `<div class="tbl"><table><thead><tr><th>شماره</th><th>موضوع</th><th>اولویت</th><th>مسئول</th><th>SLA</th><th>وضعیت</th></tr></thead><tbody>
+      <tr><td><bdi class="mono">T-2201</bdi></td><td>برداشت USDT معلق مانده</td><td>${pill('بالا','bad')}</td><td>—</td><td>${pill('۱ ساعت مانده','warn')}</td><td>${pill('باز')}</td></tr>
+      <tr><td><bdi class="mono">T-2198</bdi></td><td>مشکل در دریافت کد پیامکی</td><td>${pill('متوسط')}</td><td>پشتیبان ۲</td><td>${pill('در موعد','ok')}</td><td>${pill('منتظر کاربر')}</td></tr>
+      <tr><td><bdi class="mono">T-2190</bdi></td><td>درخواست ارتقای سطح</td><td>${pill('پایین')}</td><td>پشتیبان ۱</td><td>${pill('در موعد','ok')}</td><td>${pill('حل‌شده','ok')}</td></tr></tbody></table></div>
+    <div class="note">متن پیام‌ها همیشه به‌صورت متن ساده نمایش داده می‌شود (بدون HTML). یادداشت داخلی هرگز برای کاربر ارسال نمی‌شود.</div>`;
+  },
+  audit(){
+    return `<div class="tbl"><table><thead><tr><th>زمان</th><th>عملیات</th><th>مجری</th><th>نتیجه</th><th>یکپارچگی</th></tr></thead><tbody>${
+      S.audit.map(a=>`<tr><td class="num">${a[0]}</td><td><bdi class="mono">${a[1]}</bdi></td><td><bdi>${a[2]}</bdi></td><td>${pill(a[3],a[3]==='موفق'?'ok':'bad')}</td><td>${pill('تأییدشده','ok')}</td></tr>`).join('')}</tbody></table></div>`;
+  },
+  roles(){
+    const perms=['dashboard','currencies','withdrawals','users','platform','tickets','audit'];
+    const roles=Object.keys(T.roles);
+    const mark=(r,v)=>ACCESS[r].includes(v)?((v==='platform'||(v==='withdrawals'&&r==='finance_manager'))?'<span class="s">●S</span>':'<span class="y">●</span>'):'';
+    return `<div class="tbl"><table class="mx"><thead><tr><th>بخش</th>${roles.map(r=>`<th>${T.roles[r]}</th>`).join('')}</tr></thead><tbody>${
+      perms.map(v=>`<tr><td>${T.views[v]}</td>${roles.map(r=>`<td>${mark(r,v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="note"><span class="y">●</span> دسترسی · <span class="s">●S</span> نیازمند تأیید مجدد هویت. این جدول پیشنهاد است و اعمال واقعی آن باید در بک‌اند باشد؛ منوی پنل فقط بازتاب آن است.</div>`;
+  }
+};
+
+/* ---------- shell ---------- */
+function shell(){
+  const allowed=ACCESS[S.role];
+  if(!allowed.includes(S.view))S.view=allowed[0];
+  let groups={},navs='';
+  allowed.forEach(v=>{(groups[T.group[v]]=groups[T.group[v]]||[]).push(v)});
+  for(const g in groups){navs+=`<div class="navgrp">${g}</div>`+groups[g].map(v=>`<button class="nav" data-v="${v}" ${v===S.view?'aria-current="page"':''}><span>${T.views[v]}</span>${T.mock[v]?'<span class="tag">نمونه</span>':''}</button>`).join('')}
+  const left=Math.max(0,Math.round((S.elevated-Date.now())/1000));
+  return `<div id="app"><aside><div class="brand"><i></i>پنل مدیریت صرافی</div>${navs}</aside>
+  <main><header><div class="who"><b>${T.views[S.view]}</b></div>
+    <div class="who"><label for="rolesel" style="margin:0">نمایش به‌عنوان نقش</label>
+      <select id="rolesel">${Object.keys(T.roles).map(r=>`<option value="${r}" ${r===S.role?'selected':''}>${T.roles[r]}</option>`).join('')}</select>
+      ${left>0?pill('ارتقا فعال '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0'),'ok'):pill('بدون ارتقا (Step-up)')}
+      <button class="btn ghost" id="out">خروج</button></div></header>
+    <div class="content"><div><h1>${T.views[S.view]}${mockTag(S.view)}</h1><p class="sub">پیش‌نمایش با داده‌های نمونه · نقش فعلی: ${T.roles[S.role]}</p></div>${V[S.view]()}</div></main></div>`;
+}
+function bindShell(){
+  document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{S.view=b.dataset.v;render()});
+  $('#rolesel').onchange=e=>{S.role=e.target.value;render()};
+  $('#out').onclick=()=>{S.authed=false;S.elevated=0;render()};
+  document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>reasonDialog('تأیید برداشت '+b.dataset.a,'تأیید برداشت',false,r=>{S.withdrawals.find(w=>w.id===b.dataset.a).st='approved';S.audit.unshift(['اکنون','withdrawal.approve','ali@…','موفق']);toast('برداشت تأیید شد و در لاگ ثبت شد');render()}));
+  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>reasonDialog('رد برداشت '+b.dataset.r,'رد برداشت',true,r=>{S.withdrawals.find(w=>w.id===b.dataset.r).st='rejected';S.audit.unshift(['اکنون','withdrawal.reject','ali@…','موفق']);toast('برداشت رد شد و مبلغ آزاد شد');render()}));
+  document.querySelectorAll('[data-lift]').forEach(b=>b.onclick=()=>reasonDialog('رفع قفل برداشت','رفع قفل',false,r=>{S.controls.find(c=>c.id===b.dataset.lift).state='lifted';S.audit.unshift(['اکنون','platform.control_lift','ali@…','موفق']);toast('قفل برداشته شد');render()}));
+  const nc=$('#newctl');if(nc)nc.onclick=()=>reasonDialog('قفل ویژگی جدید: معاملات','اعمال قفل',true,r=>{S.controls.unshift({id:'c'+Date.now(),feature:'معاملات',kind:'قفل ویژگی',until:'تا اطلاع بعدی',req:'ali@…',state:'scheduled'});toast('قفل اعمال شد');render()});
+  const ub=$('#ubtn');if(ub)ub.onclick=()=>toast('جست‌وجو با شاخص کور (blind index) انجام می‌شود، نه رمزگشایی');
+}
+function render(){
+  document.documentElement.lang='fa';document.documentElement.dir='rtl';
+  $('#root').innerHTML=S.authed?shell():loginView();
+  S.authed?bindShell():bindLogin();
+}
+render();
+setInterval(()=>{if(S.authed&&S.elevated&&!document.querySelector('.scrim')){const h=$('header .pill');if(h)render()}},30000);
+</script>
