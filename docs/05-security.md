@@ -80,9 +80,9 @@ Routes that the backend classifies as sensitive answer `403 step_up_required`. T
 Served by the web host, not by the application:
 
 ```text
-Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self';
+Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline';
   img-src 'self' data:; font-src 'self'; connect-src 'self' https://<admin-api-host>;
-  frame-ancestors 'none'; base-uri 'none'; form-action 'self'; require-trusted-types-for 'script'
+  manifest-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'
 Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 X-Content-Type-Options: nosniff
 Referrer-Policy: no-referrer
@@ -91,6 +91,13 @@ Cross-Origin-Resource-Policy: same-origin
 Permissions-Policy: camera=(), microphone=(), geolocation=(), clipboard-read=()
 Cache-Control: no-store            (on index.html and every API response)
 ```
+
+Notes on the policy (see `public/_headers` and `deploy/nginx.conf`):
+
+- `script-src 'self'` has no `unsafe-inline` and no `unsafe-eval`: the Phase 1 build was run under this exact policy in a browser with no violations.
+- `style-src` still allows inline styles, because the UI library sets style attributes and injects one style element. Moving to nonces is a Phase 5 task. Script execution, the dangerous part, is not affected.
+- `require-trusted-types-for 'script'` is not enabled yet; it needs a check of every dependency and is a Phase 5 task.
+- Tabs of one browser share the session over a same-origin `BroadcastChannel`: a new tab asks the open tabs for the in-memory token. Nothing is written to disk, but any script of the same origin could ask too, which is one more reason the CSP must stay strict.
 
 Application rules:
 

@@ -1,0 +1,12 @@
+{
+  "groups": { "operations": "عملیات", "finance": "مالی", "users": "کاربران", "system": "سیستم" },
+  "dashboard": "داشبورد",
+  "currencies": "ارزها",
+  "withdrawals": "برداشت‌ها",
+  "users": "کاربران و KYC",
+  "platform": "کنترل پلتفرم",
+  "tickets": "تیکت‌ها",
+  "audit": "لاگ ممیزی",
+  "access": "مدیریت دسترسی",
+  "sessions": "نشست‌های من"
+}
