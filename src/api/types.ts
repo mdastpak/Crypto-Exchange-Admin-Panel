@@ -1,3 +1,5 @@
+import type { SealedEnvelope } from '@/crypto/seal'
+
 /** The envelope every backend endpoint answers with (docs/api.md, "Response envelope"). */
 export interface Envelope<T = unknown> {
   status: number
@@ -11,6 +13,9 @@ export interface TransportRequest {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   path: string
   body?: unknown
+  /** The sealed form of the body on a sealed route. `body` is then absent. */
+  sealedBody?: SealedEnvelope
+  requestId?: string
   token?: string | null
   signal?: AbortSignal
 }
@@ -18,6 +23,8 @@ export interface TransportRequest {
 export interface TransportResponse {
   status: number
   body: Envelope
+  /** Present when the server sealed the answer; `body` is then a placeholder. */
+  sealed?: SealedEnvelope
 }
 
 export type Transport = (req: TransportRequest) => Promise<TransportResponse>

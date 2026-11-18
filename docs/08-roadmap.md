@@ -69,6 +69,22 @@ Mock mode keeps its data inside each browser tab, so two administrators cannot i
 
 Not in Phase 4: the access review report (periodic recertification), the ledger export, ticket macros, attachments, and the staff session list; and, as before, no run against a real backend.
 
+## Phase 5 status
+
+- **Sealed payloads:** implemented in the panel and the mock server (key agreement with a signed transcript, AES-256-GCM with the AAD of the design, sequence window, stale-message check, downgrade detection). The cryptography is checked against OpenSSL known-answer vectors, and 26 tests cover tampering, replay, moved ciphertext, stale messages, downgrade, and a wrong key. It runs against the mock only: the backend has not built requirement 06.
+- **CSP:** `style-src 'unsafe-inline'` is gone (hashes and a style-attribute exception), and Trusted Types are enforced with a default policy that allows one exact string. The production build runs through every screen under the production headers with no refusal.
+- **Accessibility:** axe (WCAG 2.0 and 2.1 A and AA, plus best practices) runs on eleven screens in light and dark, and on sign-in. It found and we fixed an unlabelled action column, a missing skip-link target (and an English skip-link text), and missing landmarks. Any new finding fails the run.
+- **Phone width:** no horizontal page scroll on five key screens at 390 px.
+- **Performance budget:** gzip JS 322 KB of 520 KB, largest chunk 112 KB of 130 KB, CSS 13 KB of 20 KB; the build fails when a budget is exceeded.
+- **Runbook and security review:** [09](09-runbook.md) and [10](10-security-review.md).
+- **CI:** lint, type-check, unit tests, build, budget, and the browser checks.
+
+Not done in Phase 5, and why:
+
+- **WebAuthn for administrators.** It needs the backend: registration and assertion endpoints for administrators, and a binding of the assertion to the session. A panel-only version would check nothing. [10](10-security-review.md#webauthn) lists what is needed.
+- **A penetration test.** It needs a running backend and an outside tester. The scope is written in [10](10-security-review.md).
+- **Real-device accessibility testing** (screen readers, Persian voice output). Automated checks find a part of the problems; a person must test the rest.
+
 ## Definition of done for any screen
 
 - Permission declared and tested (visible and hidden).

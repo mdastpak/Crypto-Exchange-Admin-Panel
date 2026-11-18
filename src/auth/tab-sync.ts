@@ -38,7 +38,7 @@ export function startTabSync(): () => void {
     const m = ev.data
     switch (m.type) {
       case 'hello':
-        if (s.token && s.me && s.policy) {
+        if (s.token && s.me && s.policy && !s.seal) {
           broadcast({
             type: 'session',
             token: s.token,

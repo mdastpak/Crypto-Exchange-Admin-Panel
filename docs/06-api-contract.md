@@ -83,6 +83,18 @@ Content type `application/vnd.cex.sealed+json`:
 
 The backend already encrypts PII fields and seals rows. The panel adds nothing at rest. Nothing sensitive is cached by the browser (`Cache-Control: no-store`), and TanStack Query data for sealed routes is dropped on sign-out and on idle timeout.
 
+### What the panel implements (Phase 5)
+
+The panel and its mock server implement the whole envelope; `src/crypto/seal.ts` is the reference, and `src/crypto/vectors.json` holds known-answer vectors computed by OpenSSL, not by this code (`node scripts/gen-seal-vectors.mjs`). Details chosen where the text above was open:
+
+- **Negotiation.** `POST /admin/auth/verify` accepts `client_key` (an ECDH P-256 public JWK with only `kty`, `crv`, `x`, `y`). The answer adds `seal: {kid, sid, server_key, signature}`. The signature is ECDSA P-256 over `sid|kid|canonical(client_key)|canonical(server_key)` (canonical JSON `{crv,kty,x,y}`), checked against a key pinned in the build (`VITE_SEALING_PUBKEY`). Without a valid signature the panel does not sign in.
+- **Which messages.** A sealed route seals the request body when there is one, and seals the response. A `GET` has no body, so only its answer is sealed. Plain: `401`, `403`, `404`, `415`, `429`, and `5xx`.
+- **Sequence numbers.** Requests start at 1 and rise by one per sealed request in a session; responses have their own counter. A receiver accepts a number that it has not seen and is no more than 16 behind the highest. **A number is recorded only after the message authenticated**, so garbage with a stolen token cannot use numbers up.
+- **Downgrade.** On a sealed route, a successful answer in the clear is treated as an attack and refused (`seal_invalid`).
+- **Tabs.** A sealed session is not shared between tabs, because two tabs would race on one sequence. Each tab signs in on its own and uses one of the administrator's session slots.
+- **Errors.** `400 seal_invalid` never says why; `409 replay_detected`; `415 sealed_required` when a body arrives in the clear on a sealed route.
+- **Modes.** The panel runs with `VITE_SEALING` `off`, `optional`, or `required`. Mock mode defaults to `optional`; against the real backend it stays `off` until requirement 06 ships.
+
 ## Contracts of the missing modules
 
 Request and response shapes of the new endpoints are written as issues, each with its contract, errors, permissions, and audit events:

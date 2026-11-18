@@ -1,3 +1,6 @@
+import { isSealedRoute, staysPlain } from '@/crypto/classes'
+import { SeqWindow, deriveSealKey, generateKeyPair, isEnvelope, open, seal, signTranscript, transcript, type SealedEnvelope } from '@/crypto/seal'
+import { SEALING } from '@/lib/env'
 import type { Envelope, Me, Policy, Transport, TransportRequest, TransportResponse } from '../types'
 import { admins, grantsOf, policy as policyRec, resetDirectory } from './directory'
 import { handleAccess } from './access'
@@ -13,6 +16,17 @@ import { handleMoney, resetMoney } from './money'
  * backend does not exist yet, this file is the executable specification.
  */
 
+/** The mock's long-term signing key. The panel pins its public half, as it would pin the real server's. */
+let signing: CryptoKeyPair | null = null
+async function signingKeys() {
+  signing ??= await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify'])
+  return signing
+}
+export async function mockSealingPublicKey(): Promise<JsonWebKey> {
+  const jwk = await crypto.subtle.exportKey('jwk', (await signingKeys()).publicKey)
+  return { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y }
+}
+
 export const MOCK_POLICY: Policy = {
   idleMs: 15 * 60_000,
   absoluteMs: 8 * 3_600_000,
@@ -22,6 +36,8 @@ export const MOCK_POLICY: Policy = {
 }
 
 interface MockSession {
+  /** Sealed payload state, when the sign-in negotiated it (requirement 06). */
+  seal?: { key: CryptoKey; kid: string; sid: string; requests: SeqWindow; nextResSeq: number }
   email: string
   token: string
   refresh: string
@@ -110,7 +126,17 @@ async function handle(req: TransportRequest): Promise<TransportResponse> {
     if (!ch || !ch.passwordOk || !codesOk) return fail(401, 'code_invalid')
     failures.delete(ch.email)
     admins[ch.email].last_sign_in_at = new Date().toISOString()
-    return ok({ ...signInInfo(startSession(ch.email)), password_expired: !!admins[ch.email].mustChangePassword })
+    const sess = startSession(ch.email)
+    const info: Record<string, unknown> = { ...signInInfo(sess), password_expired: !!admins[ch.email].mustChangePassword }
+    const clientKey = (body as unknown as { client_key?: JsonWebKey }).client_key
+    if (clientKey && SEALING !== 'off') {
+      const server = await generateKeyPair()
+      const sid = crypto.randomUUID(), kid = 'k_mock_1'
+      sess.seal = { key: await deriveSealKey(server.privateKey, clientKey, sid), kid, sid, requests: new SeqWindow(), nextResSeq: 1 }
+      const signature = await signTranscript((await signingKeys()).privateKey, transcript(sid, kid, clientKey, server.publicJwk))
+      info.seal = { kid, sid, server_key: server.publicJwk, signature }
+    }
+    return ok(info)
   }
   if (req.method === 'POST' && req.path === '/admin/auth/password-reset') {
     return ok({ message: 'accepted', delay_hours: 24, hold_hours: 12 }, 202)
@@ -189,9 +215,37 @@ function refresh(s: MockSession): TransportResponse {
   return ok({ access_token: s.token, expires_at: s.tokenExpiresAt, idle_expires_at: s.idleExpiresAt })
 }
 
+const sealFail = (status: number, code: string): TransportResponse => ({ status, body: { status, message: code, code } })
+
 export const mockTransport: Transport = async (req) => {
   await new Promise((r) => setTimeout(r, 60))
   // Like HTTP: the request and the response are copies, never shared references.
-  const res = await handle(structuredClone(req))
+  const clone = structuredClone(req)
+  const sess = req.token ? sessions.get(req.token) : undefined
+  const sealed = !!sess?.seal && isSealedRoute(req.path)
+  if (sealed && sess?.seal) {
+    const st = sess.seal
+    const hasBody = req.body !== undefined || req.sealedBody !== undefined
+    // `required` mode: a body in the clear on a sealed route is refused.
+    if (hasBody && !req.sealedBody) return sealFail(415, 'sealed_required')
+    if (req.sealedBody) {
+      const env = req.sealedBody as SealedEnvelope
+      try {
+        if (!isEnvelope(env) || env.kid !== st.kid) throw new Error('format')
+        if (!st.requests.check(env.seq)) return sealFail(409, 'replay_detected')
+        clone.body = await open(st.key, { sid: st.sid, direction: 'req', method: req.method, path: req.path, requestId: req.requestId ?? '' }, env)
+        st.requests.commit(env.seq) // only an authenticated message uses a sequence number
+        delete clone.sealedBody
+      } catch {
+        return sealFail(400, 'seal_invalid') // no detail
+      }
+    }
+  }
+  const res = await handle(clone)
+  if (sealed && sess?.seal && !staysPlain(res.status)) {
+    const st = sess.seal
+    const env = await seal(st.key, { kid: st.kid, sid: st.sid, direction: 'res', seq: st.nextResSeq++, method: req.method, path: req.path, requestId: req.requestId ?? '' }, res.body)
+    return structuredClone({ status: res.status, body: { status: res.status, message: '' }, sealed: env })
+  }
   return structuredClone(res)
 }

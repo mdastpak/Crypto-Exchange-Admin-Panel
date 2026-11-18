@@ -39,7 +39,7 @@ export function AppSidebar() {
   }, [me, t, tn])
 
   return (
-    <Sidebar collapsible='icon' variant='inset'>
+    <Sidebar collapsible='icon' variant='inset' role='navigation' aria-label={t('mainNav')}>
       <SidebarHeader>
         <div className='flex items-center gap-2 px-2 py-1.5 font-semibold'>
           <Landmark className='size-5' />

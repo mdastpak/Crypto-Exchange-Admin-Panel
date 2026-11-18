@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Me, Policy } from '@/api/types'
+import type { SealSession } from '@/crypto/session'
 
 /**
  * The only holder of the access token. It lives in memory: nothing is written
@@ -17,6 +18,7 @@ interface StartPayload {
   absoluteExpiresAt: number
   elevatedUntil: number
   passwordExpired?: boolean
+  seal?: SealSession | null
 }
 
 interface SessionState {
@@ -29,6 +31,7 @@ interface SessionState {
   absoluteExpiresAt: number
   elevatedUntil: number
   passwordExpired: boolean
+  seal: SealSession | null
   endReason: EndReason
   start: (p: StartPayload) => void
   setToken: (token: string, tokenExpiresAt: number) => void
@@ -49,12 +52,13 @@ const empty = {
   absoluteExpiresAt: 0,
   elevatedUntil: 0,
   passwordExpired: false,
+  seal: null,
 }
 
 export const useSession = create<SessionState>()((set) => ({
   ...empty,
   endReason: null,
-  start: (p) => set({ ...p, passwordExpired: !!p.passwordExpired, endReason: null }),
+  start: (p) => set({ ...p, passwordExpired: !!p.passwordExpired, seal: p.seal ?? null, endReason: null }),
   setToken: (token, tokenExpiresAt) => set({ token, tokenExpiresAt }),
   setIdle: (idleExpiresAt) => set({ idleExpiresAt }),
   setElevated: (elevatedUntil) => set({ elevatedUntil }),

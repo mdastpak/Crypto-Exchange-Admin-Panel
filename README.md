@@ -3,7 +3,7 @@
 The back-office web application for the [Crypto Exchange](https://github.com/mdastpak/Crypto-Exchange) backend.
 Staff use it to run currencies and markets, review withdrawals, operate OTC routing, restrict users, lock the platform, and read the audit log.
 
-**Status:** Phases 1 to 4 are built: foundation, operations, money flow, and the modules that wait for backend work (users and KYC, ledger, tickets, staff and access), the last group on a mock server. See [docs/08-roadmap.md](docs/08-roadmap.md).
+**Status:** Phases 1 to 5 are built: foundation, operations, money flow, and the modules that wait for backend work (users and KYC, ledger, tickets, staff and access), the last group on a mock server, then hardening (sealed payloads, strict CSP with Trusted Types, accessibility and performance gates). See [docs/08-roadmap.md](docs/08-roadmap.md).
 
 | Area | Choice |
 | --- | --- |
@@ -19,6 +19,8 @@ pnpm install
 pnpm dev          # http://localhost:5173, mock API
 pnpm test         # unit and component tests
 pnpm lint && pnpm typecheck && pnpm build
+pnpm check:bundle # performance budget
+pnpm e2e          # CSP, Trusted Types, accessibility, phone width (needs a built dist and Chromium)
 ```
 
 ### Mock mode (default)
@@ -69,4 +71,6 @@ preview/        the interactive design preview (single HTML file)
 | [docs/06-api-contract.md](docs/06-api-contract.md) | Conventions and encrypted payloads |
 | [docs/07-i18n.md](docs/07-i18n.md) | Localisation and RTL rules |
 | [docs/08-roadmap.md](docs/08-roadmap.md) | Phases and definition of done |
+| [docs/09-runbook.md](docs/09-runbook.md) | Deploying, configuring, and operating the panel |
+| [docs/10-security-review.md](docs/10-security-review.md) | Controls, residual risks, and the scope of a penetration test |
 | [docs/backend-requirements/](docs/backend-requirements/) | Backend work this panel needs |

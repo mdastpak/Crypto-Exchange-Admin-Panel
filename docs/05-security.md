@@ -92,12 +92,12 @@ Permissions-Policy: camera=(), microphone=(), geolocation=(), clipboard-read=()
 Cache-Control: no-store            (on index.html and every API response)
 ```
 
-Notes on the policy (see `public/_headers` and `deploy/nginx.conf`):
+Notes on the policy (see `public/_headers` and `deploy/nginx.conf`; the end-to-end test runs the build under exactly the headers in `public/_headers`):
 
-- `script-src 'self'` has no `unsafe-inline` and no `unsafe-eval`: the Phase 1 build was run under this exact policy in a browser with no violations.
-- `style-src` still allows inline styles, because the UI library sets style attributes and injects one style element. Moving to nonces is a Phase 5 task. Script execution, the dangerous part, is not affected.
-- `require-trusted-types-for 'script'` is not enabled yet; it needs a check of every dependency and is a Phase 5 task.
-- Tabs of one browser share the session over a same-origin `BroadcastChannel`: a new tab asks the open tabs for the in-memory token. Nothing is written to disk, but any script of the same origin could ask too, which is one more reason the CSP must stay strict.
+- `script-src 'self'` has no `unsafe-inline` and no `unsafe-eval`.
+- `style-src 'self'` has no `unsafe-inline`. Two directives cover what the UI library needs: `style-src-attr 'unsafe-inline'` for style attributes, and `style-src-elem` with the **hashes** of the four stylesheets that dependencies inject at run time. Style attributes can only be set by code that already runs in the page or by injected HTML, so they are the lowest-risk part. If a dependency update changes one of those stylesheets, the browser refuses it, the end-to-end test fails and prints the new hash; review it and update both header files.
+- `require-trusted-types-for 'script'` and `trusted-types default` are on. The browser refuses every write to `innerHTML` and similar sinks unless the default policy in `src/lib/trusted-types.ts` allows the exact string. It allows one, the Radix Select stylesheet, and throws for anything else. No script or script URL is ever trusted.
+- Tabs of one browser share the session over a same-origin `BroadcastChannel` **unless sealing is active**: with sealed payloads each tab signs in on its own, because the sequence numbers belong to one tab.
 
 Application rules:
 

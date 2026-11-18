@@ -1,6 +1,7 @@
 import { api } from '@/api/client'
 import type { Me, Policy } from '@/api/types'
 import { normalizeDigits } from '@/lib/digits'
+import { acceptSeal, offerSeal, type SealAnswer } from './seal-negotiation'
 import { broadcast } from './tab-sync'
 import { useSession } from './session-store'
 
@@ -13,6 +14,7 @@ interface SignInInfo {
   policy: Policy
   me: Me
   password_expired?: boolean
+  seal?: SealAnswer
 }
 
 /** Step 1: password. The answer is the same for known and unknown accounts. */
@@ -21,11 +23,14 @@ export const login = (email: string, password: string) =>
 
 /** Step 2: email code and TOTP. Starts the in-memory session. */
 export async function verify(challenge: string, emailCode: string, totp: string) {
+  const offer = await offerSeal()
   const info = await api.post<SignInInfo>('/admin/auth/verify', {
     challenge,
     email_code: normalizeDigits(emailCode).trim(),
     totp: normalizeDigits(totp).trim(),
+    ...(offer && { client_key: offer.clientKey }),
   })
+  const seal = await acceptSeal(offer, info.seal)
   useSession.getState().start({
     token: info.access_token,
     tokenExpiresAt: info.expires_at,
@@ -35,6 +40,7 @@ export async function verify(challenge: string, emailCode: string, totp: string)
     absoluteExpiresAt: info.absolute_expires_at,
     elevatedUntil: info.elevated_until,
     passwordExpired: info.password_expired,
+    seal,
   })
 }
 

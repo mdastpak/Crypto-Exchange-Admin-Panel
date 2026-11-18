@@ -1,5 +1,7 @@
 import { requestStepUp } from '@/auth/step-up-store'
 import { useSession } from '@/auth/session-store'
+import { isSealedRoute, staysPlain } from '@/crypto/classes'
+import { SealError, isEnvelope, open, seal } from '@/crypto/seal'
 import { API_MODE } from '@/lib/env'
 import { httpTransport } from './http-transport'
 import { mockTransport } from './mock/server'
@@ -38,15 +40,38 @@ async function call<T>(
   opts: CallOptions = {},
   retried = false
 ): Promise<T> {
-  const { token } = useSession.getState()
+  const { token, seal: sealState } = useSession.getState()
+  const sealedRoute = !!sealState && isSealedRoute(path)
+  const requestId = crypto.randomUUID()
   let res
   try {
-    res = await transport({ method, path, body, token, signal: opts.signal })
+    let sealedBody
+    if (sealedRoute && sealState && body !== undefined) {
+      // The sequence number is taken now, before any await, so concurrent requests never share one.
+      const seq = sealState.nextSeq++
+      sealedBody = await seal(sealState.key, { kid: sealState.kid, sid: sealState.sid, direction: 'req', seq, method, path, requestId }, body)
+    }
+    res = await transport({ method, path, body: sealedBody ? undefined : body, sealedBody, requestId, token, signal: opts.signal })
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') throw e
     throw new ApiError(0, 'network', 'network')
   }
-  const env = res.body
+  let env = res.body
+  if (sealedRoute && sealState) {
+    if (res.sealed) {
+      try {
+        if (!isEnvelope(res.sealed) || res.sealed.kid !== sealState.kid || !sealState.responses.check(res.sealed.seq)) throw new SealError('seq')
+        env = await open(sealState.key, { sid: sealState.sid, direction: 'res', method, path, requestId }, res.sealed)
+        sealState.responses.commit(res.sealed.seq)
+      } catch {
+        // Never show what could not be authenticated.
+        throw new ApiError(0, 'seal_invalid', 'seal_invalid', undefined, requestId)
+      }
+    } else if (res.status < 400 || !staysPlain(res.status)) {
+      // A sealed route that answers in the clear could be a downgrade: refuse it.
+      throw new ApiError(0, 'seal_invalid', 'seal_invalid', undefined, requestId)
+    }
+  }
   if (res.status >= 400) {
     const code = env.code ?? 'error'
     if (res.status === 401 && token && SESSION_ENDED_CODES[code]) {

@@ -32,7 +32,7 @@ export function DataTable<T>(p: Props<T>) {
       <div className='overflow-x-auto rounded-md border'>
         <Table>
           <TableHeader>
-            <TableRow>{p.columns.map((c) => <TableHead key={c.key} className={c.className}>{c.header}</TableHead>)}</TableRow>
+            <TableRow>{p.columns.map((c) => <TableHead key={c.key} className={c.className}>{c.header === '' ? <span className='sr-only'>{t('actions')}</span> : c.header}</TableHead>)}</TableRow>
           </TableHeader>
           <TableBody>
             {p.loading ? (

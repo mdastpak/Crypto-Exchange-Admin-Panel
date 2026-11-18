@@ -1,3 +1,4 @@
+import { Lock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { formatClock, useNow } from '@/auth/use-now'
 import { useSession } from '@/auth/session-store'
@@ -20,10 +21,12 @@ export function SessionStatus() {
   const idleAt = useSession((s) => s.idleExpiresAt)
   const elevatedUntil = useSession((s) => s.elevatedUntil)
   const warnMs = useSession((s) => s.policy?.warnMs ?? 120_000)
+  const sealed = useSession((s) => s.seal !== null)
   const idleLeft = idleAt - now
   const elevatedLeft = elevatedUntil - now
   return (
     <div className='flex items-center gap-2 text-xs'>
+      {sealed && <span title={t('sealed')} className='text-emerald-700 dark:text-emerald-400'><Lock className='size-4' aria-hidden='true' /><span className='sr-only'>{t('sealed')}</span></span>}
       <Badge variant={idleLeft <= warnMs ? 'destructive' : 'secondary'} className='tabular-nums'>
         {t('idle')}: <span dir='ltr'>{formatClock(idleLeft)}</span>
       </Badge>

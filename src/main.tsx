@@ -7,8 +7,11 @@ import { useSession } from '@/auth/session-store'
 import { DirectionProvider } from './context/direction-provider'
 import { ThemeProvider } from './context/theme-provider'
 import './i18n'
+import { installTrustedTypes } from './lib/trusted-types'
 import { routeTree } from './routeTree.gen'
 import './styles/index.css'
+
+installTrustedTypes()
 
 const queryClient = new QueryClient({
   defaultOptions: {
