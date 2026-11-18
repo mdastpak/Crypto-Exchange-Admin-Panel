@@ -12,7 +12,7 @@ What the panel does, what it does not do, and what an outside tester should look
 | Step-up shared by concurrent requests | `auth/step-up-store.ts`, `api/client.ts` | Client tests |
 | Permissions hide what is unavailable; a direct URL looks like "not found" | `auth/guard.ts` | Route guards on every screen; backend enforcement is requirement 01 |
 | Two-person approvals shown and enforced by the requester check | pending changes, price overrides, lifts, reseal | Mock tests (the backend must enforce them) |
-| Sealed payloads, signed key agreement, replay and downgrade detection | `src/crypto/`, `api/client.ts` | OpenSSL known-answer vectors and 26 tests on tampering, replay, and downgrade |
+| Sealed payloads, signed key agreement, replay and downgrade detection | `src/crypto/`, `api/client.ts` | OpenSSL known-answer vectors and 27 tests on tampering, replay, and downgrade |
 | CSP without `unsafe-inline` for scripts or style elements | `public/_headers` | `pnpm e2e` runs every screen under it |
 | Trusted Types with a one-string allow-list | `lib/trusted-types.ts` | `pnpm e2e` (any refusal fails the run) |
 | No third-party script, font, or analytics | `index.html`, bundle | CSP `default-src 'none'`; fonts are bundled |

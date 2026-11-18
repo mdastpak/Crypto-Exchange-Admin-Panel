@@ -71,7 +71,7 @@ Not in Phase 4: the access review report (periodic recertification), the ledger 
 
 ## Phase 5 status
 
-- **Sealed payloads:** implemented in the panel and the mock server (key agreement with a signed transcript, AES-256-GCM with the AAD of the design, sequence window, stale-message check, downgrade detection). The cryptography is checked against OpenSSL known-answer vectors, and 26 tests cover tampering, replay, moved ciphertext, stale messages, downgrade, and a wrong key. It runs against the mock only: the backend has not built requirement 06.
+- **Sealed payloads:** implemented in the panel and the mock server (key agreement with a signed transcript, AES-256-GCM with the AAD of the design, sequence window, stale-message check, downgrade detection). The cryptography is checked against OpenSSL known-answer vectors, and 27 tests cover tampering, replay, moved ciphertext, stale messages, downgrade, and a wrong key. It runs against the mock only: the backend has not built requirement 06.
 - **CSP:** `style-src 'unsafe-inline'` is gone (hashes and a style-attribute exception), and Trusted Types are enforced with a default policy that allows one exact string. The production build runs through every screen under the production headers with no refusal.
 - **Accessibility:** axe (WCAG 2.0 and 2.1 A and AA, plus best practices) runs on eleven screens in light and dark, and on sign-in. It found and we fixed an unlabelled action column, a missing skip-link target (and an English skip-link text), and missing landmarks. Any new finding fails the run.
 - **Phone width:** no horizontal page scroll on five key screens at 390 px.
