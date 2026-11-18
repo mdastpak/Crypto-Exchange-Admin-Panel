@@ -5,7 +5,7 @@ Each phase ends in something that runs against the mock adapters and, where the 
 | Phase | Deliverable | Notes |
 | --- | --- | --- |
 | 0 | Specification and interactive preview (this repository) | Done when the owner approves the design |
-| 1 | Foundation: template import, strict TypeScript, i18n and RTL, API client, generated types, mock adapters, CI, security headers | No feature screens yet. Includes the sign-in with TOTP and the step-up dialog |
+| 1 | Foundation (including the three-factor sign-in, password rotation and reset screens, session timers, and the access-manager shell): template import, strict TypeScript, i18n and RTL, API client, generated types, mock adapters, CI, security headers | No feature screens yet. Includes the sign-in with TOTP and the step-up dialog |
 | 2 | Core operations with real APIs: dashboard, currencies, lifecycle, markets, prices, platform controls | The highest-value, lowest-dependency screens |
 | 3 | Money flow: withdrawals, payouts, restrictions, OTC routing, venues, integrity, audit log, SMS routing, market data | Two-person flows and reasons everywhere |
 | 4 | Backend-dependent modules: users and KYC, ledger and finance, tickets, staff and roles | Built on mocks first; switched to real adapters as the backend requirements land |

@@ -89,9 +89,10 @@ Request and response shapes of the new endpoints are written as issues, each wit
 
 | Module | Requirement |
 | --- | --- |
-| Roles, permissions, `GET /admin/me`, staff management | [01-rbac.md](backend-requirements/01-rbac.md) |
+| Dynamic groups, catalog, lookups, `GET /admin/me`, staff management | [01-rbac.md](backend-requirements/01-rbac.md) |
 | Users and KYC | [02-users-kyc.md](backend-requirements/02-users-kyc.md) |
 | Ledger and finance | [03-ledger-finance.md](backend-requirements/03-ledger-finance.md) |
 | Ticketing | [04-ticketing.md](backend-requirements/04-ticketing.md) |
 | Dashboard aggregates | [05-dashboard.md](backend-requirements/05-dashboard.md) |
 | Sealed payloads | [06-sealed-payloads.md](backend-requirements/06-sealed-payloads.md) |
+| Admin password, rotation, reset delay, sessions and refresh | [07-admin-credentials-sessions.md](backend-requirements/07-admin-credentials-sessions.md) |

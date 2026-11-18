@@ -107,7 +107,7 @@ const T = {
     finance_analyst:'کارشناس مالی', finance_manager:'مدیر مالی', support_agent:'پشتیبانی',
     ticket_agent:'تیکتینگ', compliance_officer:'کارشناس KYC', auditor:'ناظر'
   },
-  views:{dashboard:'داشبورد',currencies:'ارزها',withdrawals:'برداشت‌ها',users:'کاربران و KYC',platform:'کنترل پلتفرم',tickets:'تیکت‌ها',audit:'لاگ ممیزی',roles:'نقش‌ها و دسترسی'},
+  views:{dashboard:'داشبورد',currencies:'ارزها',withdrawals:'برداشت‌ها',users:'کاربران و KYC',platform:'کنترل پلتفرم',tickets:'تیکت‌ها',audit:'لاگ ممیزی',roles:'مدیریت دسترسی'},
   group:{dashboard:'عملیات',currencies:'عملیات',withdrawals:'مالی',users:'کاربران',platform:'سیستم',tickets:'کاربران',audit:'سیستم',roles:'سیستم'},
   mock:{users:1,tickets:1,roles:1}
 };
@@ -130,7 +130,8 @@ const CAN={
 };
 const can=p=>(CAN[p]||[]).includes(S.role);
 
-let S={role:'finance_manager',view:'dashboard',authed:false,step:0,elevated:0,lang:'fa',
+const IDLE=15*60;
+let S={idleAt:0,absAt:0,group:'support_agent',role:'finance_manager',view:'dashboard',authed:false,step:0,elevated:0,lang:'fa',
   withdrawals:[
     {id:'w-1042',user:'u_8f3a…c1',cur:'USDT',net:'tron',amt:'25000.00',dest:'TQn9…x7Zp',st:'review',why:'بالاتر از آستانه بازبینی'},
     {id:'w-1041',user:'u_21bd…90',cur:'BTC',net:'bitcoin',amt:'1.250000',dest:'bc1q…f2k9',st:'review',why:'مقصد جدید (کمتر از ۲۴ ساعت)'},
@@ -151,6 +152,40 @@ let S={role:'finance_manager',view:'dashboard',authed:false,step:0,elevated:0,la
     ['LUNA','Terra','pending','terra'],['LUNC','Terra Classic','delisting','terra-classic']
   ]
 };
+
+/* access manager data */
+const LV={none:'بدون دسترسی',view:'مشاهده',edit:'ویرایش',approve:'تأیید',manage:'مدیریت',lookup:'نمایش خلاصه (ماسک‌شده)',status:'فقط وضعیت',request:'درخواست'};
+const RES=[
+ {k:'tickets',t:'تیکت‌ها',l:['none','view','edit']},
+ {k:'users',t:'کاربران',l:['none','lookup','view']},
+ {k:'kyc',t:'KYC',l:['none','status','view','approve']},
+ {k:'withdrawals',t:'برداشت‌ها',l:['none','status','view','approve']},
+ {k:'transactions',t:'تراکنش‌ها',l:['none','status','view']},
+ {k:'requests',t:'درخواست‌های ثبت‌شده',l:['none','status','view']},
+ {k:'system_health',t:'سلامت سیستم',l:['none','view']},
+ {k:'restrictions',t:'محدودیت کاربران',l:['none','request','edit']},
+ {k:'currencies',t:'ارزها',l:['none','view','edit','manage']},
+ {k:'audit',t:'لاگ ممیزی',l:['none','view']}
+];
+const REQ={'tickets:edit':{users:'lookup',kyc:'status',withdrawals:'status',requests:'status',system_health:'view'},
+ 'withdrawals:approve':{users:'lookup',kyc:'status',system_health:'view'},'withdrawals:view':{users:'lookup'},
+ 'kyc:approve':{users:'lookup'},'restrictions:request':{users:'lookup'}};
+const GNAME={support_agent:'پشتیبانی',finance_analyst:'کارشناس مالی',ticket_agent:'تیکتینگ'};
+const GROUPS={
+ support_agent:{tickets:'edit',users:'lookup',kyc:'status',withdrawals:'status',transactions:'status',requests:'status',system_health:'view',restrictions:'request'},
+ finance_analyst:{withdrawals:'view',users:'lookup',kyc:'status',transactions:'view',system_health:'view'},
+ ticket_agent:{tickets:'edit',users:'lookup',kyc:'status',withdrawals:'status',requests:'status',system_health:'view'}
+};
+const VER={support_agent:3,finance_analyst:2,ticket_agent:1};
+function requiredFor(G){
+  const out={};
+  Object.keys(G).forEach(r=>{const m=REQ[r+':'+G[r]];if(!m)return;
+    Object.keys(m).forEach(k=>{const res=RES.find(x=>x.k===k),cur=out[k];
+      if(!cur||res.l.indexOf(m[k])>res.l.indexOf(cur.lvl))out[k]={lvl:m[k],by:[]};
+      out[k].by.push(RES.find(x=>x.k===r).t+':'+LV[G[r]])})});
+  return out;
+}
+function applyDeps(G){let ch=true;while(ch){ch=false;const q=requiredFor(G);Object.keys(q).forEach(k=>{const res=RES.find(x=>x.k===k);if(res.l.indexOf(G[k]||'none')<res.l.indexOf(q[k].lvl)){G[k]=q[k].lvl;ch=true}})}}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),2600)}
@@ -159,27 +194,31 @@ function toast(m){const e=document.createElement('div');e.className='toast';e.te
 function loginView(){
   const st=S.step;
   const body=[
-   `<div><label for="em">ایمیل</label><input id="em" type="email" value="ali@exchange.example" dir="ltr"></div>
-    <p class="sub">برای هر ایمیل پاسخ یکسان نمایش داده می‌شود؛ وجود یا نبود حساب لو نمی‌رود.</p>`,
+   `<div><label for="em">ایمیل</label><input id="em" type="email" value="ali@exchange.example" dir="ltr" autocomplete="username"></div>
+    <div><label for="pw">رمز عبور (حداقل ۱۴ نویسه)</label><input id="pw" type="password" dir="ltr" autocomplete="current-password" placeholder="••••••••••••••"></div>
+    <p class="sub">برای هر ایمیل پاسخ یکسان نمایش داده می‌شود؛ وجود یا نبود حساب لو نمی‌رود. ۵ تلاش ناموفق: قفل ۱۵ دقیقه‌ای که دو برابر می‌شود.</p>`,
    `<div><label for="oc">کد ارسال‌شده به ایمیل</label><input id="oc" type="text" inputmode="numeric" maxlength="6" dir="ltr" placeholder="123456"></div>
     <div><label for="tp">کد برنامهٔ احراز هویت (TOTP)</label><input id="tp" type="text" inputmode="numeric" maxlength="6" dir="ltr" placeholder="654321"></div>
     <p class="sub">ارقام فارسی و عربی هم پذیرفته می‌شوند. در این پیش‌نمایش هر کد ۶ رقمی معتبر است.</p>`
   ][st];
   return `<div id="login"><div class="lbox card">
     <div class="brand" style="color:var(--ink);padding:0"><i></i> پنل مدیریت صرافی</div>
-    <div class="steps"><b class="${st>=0?'on':''}"></b><b class="${st>=1?'on':''}"></b></div>
+    <div class="steps"><b class="on"></b><b class="${st>=1?'on':''}"></b></div>
+    <div class="k">سه عامل الزامی: رمز عبور ← کد ایمیل ← TOTP</div>
     ${body}<div class="err" id="lerr"></div>
-    <button class="btn" id="lgo">${st?'ورود':'ارسال کد'}</button>
-    <div class="note warn">توکن فقط در حافظه می‌ماند. با بازنشانی صفحه یا ۱۵ دقیقه بی‌فعالیتی از حساب خارج می‌شوید.</div>
+    <button class="btn" id="lgo">${st?'ورود':'ادامه'}</button>
+    <div class="note warn">توکن فقط در حافظه می‌ماند. بی‌فعالیتی ۱۵ دقیقه، حداکثر طول نشست ۸ ساعت. بازنشانی رمز: تأخیر اجباری ۲۴ ساعته و محدودیت ۱۲ ساعتهٔ بعد از آن.</div>
   </div></div>`;
 }
 function bindLogin(){
   $('#lgo').onclick=()=>{
     const fa=s=>s.replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
-    if(S.step===0){S.step=1;render();return}
+    if(S.step===0){
+      if($('#pw').value.length<14){$('#lerr').textContent='ورود ممکن نیست. اطلاعات را بررسی کنید.';return}
+      S.step=1;render();return}
     const a=fa($('#oc').value),b=fa($('#tp').value);
-    if(!/^\d{6}$/.test(a)||!/^\d{6}$/.test(b)){$('#lerr').textContent='کد نامعتبر یا منقضی است.';return}
-    S.authed=true;S.step=0;S.elevated=Date.now()+5*60000;render();
+    if(!/^\d{6}$/.test(a)||!/^\d{6}$/.test(b)){$('#lerr').textContent='ورود ممکن نیست. اطلاعات را بررسی کنید.';return}
+    S.authed=true;S.step=0;S.elevated=Date.now()+5*60000;S.idleAt=Date.now()+IDLE*1000;S.absAt=Date.now()+8*3600*1000;render();
   };
 }
 
@@ -269,16 +308,24 @@ const V={
       S.audit.map(a=>`<tr><td class="num">${a[0]}</td><td><bdi class="mono">${a[1]}</bdi></td><td><bdi>${a[2]}</bdi></td><td>${pill(a[3],a[3]==='موفق'?'ok':'bad')}</td><td>${pill('تأییدشده','ok')}</td></tr>`).join('')}</tbody></table></div>`;
   },
   roles(){
-    const perms=['dashboard','currencies','withdrawals','users','platform','tickets','audit'];
-    const roles=Object.keys(T.roles);
-    const mark=(r,v)=>ACCESS[r].includes(v)?((v==='platform'||(v==='withdrawals'&&r==='finance_manager'))?'<span class="s">●S</span>':'<span class="y">●</span>'):'';
-    return `<div class="tbl"><table class="mx"><thead><tr><th>بخش</th>${roles.map(r=>`<th>${T.roles[r]}</th>`).join('')}</tr></thead><tbody>${
-      perms.map(v=>`<tr><td>${T.views[v]}</td>${roles.map(r=>`<td>${mark(r,v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
-    <div class="note"><span class="y">●</span> دسترسی · <span class="s">●S</span> نیازمند تأیید مجدد هویت. این جدول پیشنهاد است و اعمال واقعی آن باید در بک‌اند باشد؛ منوی پنل فقط بازتاب آن است.</div>`;
+    const g=S.group,G=GROUPS[g],ro=S.role!=='super_admin';
+    const req=requiredFor(G);
+    const rows=RES.map(r=>{
+      const cur=G[r.k]||'none',min=req[r.k]?req[r.k].lvl:'none';
+      const reasons=req[r.k]?req[r.k].by.join('، '):'';
+      return `<tr><td>${r.t}<div class="k mono"><bdi>${r.k}</bdi></div></td><td><select data-res="${r.k}" ${ro?'disabled':''}>${r.l.map(l=>`<option value="${l}" ${l===cur?'selected':''} ${r.l.indexOf(l)<r.l.indexOf(min)?'disabled':''}>${LV[l]||l}</option>`).join('')}</select></td>
+      <td>${reasons?pill('الزامی برای: '+reasons,'warn'):''}</td></tr>`}).join('');
+    return `<div class="card row"><label for="gsel" style="margin:0">گروه</label><select id="gsel">${Object.keys(GROUPS).map(k=>`<option value="${k}" ${k===g?'selected':''}>${GNAME[k]}</option>`).join('')}</select>
+      ${ro?pill('فقط خواندنی: شما دسترسی مدیریت دسترسی ندارید'):pill('نسخهٔ '+(VER[g]||1))}</div>
+    <div class="tbl"><table><thead><tr><th>بخش</th><th>سطح دسترسی</th><th>وابستگی</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="row"><button class="btn" id="savegrp" ${ro?'disabled':''}>ثبت تغییر و ارسال برای تأیید نفر دوم</button></div>
+    <div class="note">هر سطح، نمایش‌های لازم از بخش‌های دیگر (lookup) را خودکار اضافه می‌کند و تا زمانی که آن سطح هست قابل حذف نیست. داده‌ها در این نمایش‌ها ماسک‌شده‌اند. ذخیره نیاز به دلیل، تأیید مجدد هویت و تأیید سوپر ادمین دوم دارد.</div>`;
   }
 };
 
 /* ---------- shell ---------- */
+const idleLeft=()=>Math.max(0,Math.round((S.idleAt-Date.now())/1000));
+const idleTxt=()=>{const l=idleLeft();return Math.floor(l/60)+':'+String(l%60).padStart(2,'0')};
 function shell(){
   const allowed=ACCESS[S.role];
   if(!allowed.includes(S.view))S.view=allowed[0];
@@ -290,18 +337,22 @@ function shell(){
   <main><header><div class="who"><b>${T.views[S.view]}</b></div>
     <div class="who"><label for="rolesel" style="margin:0">نمایش به‌عنوان نقش</label>
       <select id="rolesel">${Object.keys(T.roles).map(r=>`<option value="${r}" ${r===S.role?'selected':''}>${T.roles[r]}</option>`).join('')}</select>
-      ${left>0?pill('ارتقا فعال '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0'),'ok'):pill('بدون ارتقا (Step-up)')}
-      <button class="btn ghost" id="out">خروج</button></div></header>
+      ${pill('عدم فعالیت: '+idleTxt(),idleLeft()<=120?'warn':'')}${left>0?pill('ارتقا فعال '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0'),'ok'):pill('بدون ارتقا (Step-up)')}
+      <button class="btn ghost" id="skip" title="فقط برای دمو">پرش به ۲ دقیقهٔ آخر</button><button class="btn ghost" id="out">خروج</button></div></header>
     <div class="content"><div><h1>${T.views[S.view]}${mockTag(S.view)}</h1><p class="sub">پیش‌نمایش با داده‌های نمونه · نقش فعلی: ${T.roles[S.role]}</p></div>${V[S.view]()}</div></main></div>`;
 }
 function bindShell(){
   document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{S.view=b.dataset.v;render()});
   $('#rolesel').onchange=e=>{S.role=e.target.value;render()};
   $('#out').onclick=()=>{S.authed=false;S.elevated=0;render()};
+  $('#skip').onclick=()=>{S.idleAt=Date.now()+120000;render()};
   document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>reasonDialog('تأیید برداشت '+b.dataset.a,'تأیید برداشت',false,r=>{S.withdrawals.find(w=>w.id===b.dataset.a).st='approved';S.audit.unshift(['اکنون','withdrawal.approve','ali@…','موفق']);toast('برداشت تأیید شد و در لاگ ثبت شد');render()}));
   document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>reasonDialog('رد برداشت '+b.dataset.r,'رد برداشت',true,r=>{S.withdrawals.find(w=>w.id===b.dataset.r).st='rejected';S.audit.unshift(['اکنون','withdrawal.reject','ali@…','موفق']);toast('برداشت رد شد و مبلغ آزاد شد');render()}));
   document.querySelectorAll('[data-lift]').forEach(b=>b.onclick=()=>reasonDialog('رفع قفل برداشت','رفع قفل',false,r=>{S.controls.find(c=>c.id===b.dataset.lift).state='lifted';S.audit.unshift(['اکنون','platform.control_lift','ali@…','موفق']);toast('قفل برداشته شد');render()}));
   const nc=$('#newctl');if(nc)nc.onclick=()=>reasonDialog('قفل ویژگی جدید: معاملات','اعمال قفل',true,r=>{S.controls.unshift({id:'c'+Date.now(),feature:'معاملات',kind:'قفل ویژگی',until:'تا اطلاع بعدی',req:'ali@…',state:'scheduled'});toast('قفل اعمال شد');render()});
+  const gs=$('#gsel');if(gs){gs.onchange=e=>{S.group=e.target.value;render()};
+    document.querySelectorAll('[data-res]').forEach(sel=>sel.onchange=()=>{const G=GROUPS[S.group];G[sel.dataset.res]=sel.value;if(sel.value==='none')delete G[sel.dataset.res];applyDeps(G);render()});
+    $('#savegrp').onclick=()=>reasonDialog('ثبت تغییر گروه «'+GNAME[S.group]+'»','ارسال برای تأیید',false,r=>{S.audit.unshift(['اکنون','access.group_change','ali@…','منتظر تأیید']);toast('تغییر ثبت شد و منتظر تأیید سوپر ادمین دوم است')})}
   const ub=$('#ubtn');if(ub)ub.onclick=()=>toast('جست‌وجو با شاخص کور (blind index) انجام می‌شود، نه رمزگشایی');
 }
 function render(){
@@ -310,5 +361,21 @@ function render(){
   S.authed?bindShell():bindLogin();
 }
 render();
-setInterval(()=>{if(S.authed&&S.elevated&&!document.querySelector('.scrim')){const h=$('header .pill');if(h)render()}},30000);
+/* idle handling: real input extends the session; server would be the authority */
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{if(S.authed&&idleLeft()>120&&!document.querySelector('.scrim.idle'))S.idleAt=Date.now()+IDLE*1000}));
+setInterval(()=>{
+  if(!S.authed)return;
+  const l=idleLeft(), h=document.querySelector('header .pill');
+  if(l<=0){S.authed=false;S.elevated=0;render();toast('نشست به‌دلیل عدم فعالیت پایان یافت');return}
+  if(l<=120&&!document.querySelector('.scrim.idle')){
+    const m=document.createElement('div');m.className='scrim idle';
+    m.innerHTML='<div class="modal" role="alertdialog" aria-modal="true"><h2>نشست در حال پایان است</h2><p class="sub">به‌دلیل عدم فعالیت، تا <b id="cd"></b> دیگر از حساب خارج می‌شوید. پیش‌نویس فرم‌ها در حافظه می‌ماند.</p><div class="row"><button class="btn" id="stay">ادامهٔ نشست</button><button class="btn ghost" id="outnow">خروج</button></div></div>';
+    document.body.appendChild(m);
+    $('#stay').onclick=()=>{S.idleAt=Date.now()+IDLE*1000;m.remove();render()};
+    $('#outnow').onclick=()=>{m.remove();S.authed=false;render()};
+  }
+  const cd=$('#cd');if(cd)cd.textContent=idleTxt();
+  if(h&&!document.querySelector('.scrim:not(.idle)'))h.textContent='عدم فعالیت: '+idleTxt();
+},1000);
+
 </script>

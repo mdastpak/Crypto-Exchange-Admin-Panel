@@ -20,17 +20,20 @@ Source of the endpoint list: `docs/swagger.json` of the backend (`/api/v1/admin/
 | 14 | Notifications | SMS provider health, manual order | `/admin/notifications/sms` | Real |
 | 15 | Ledger and finance | balances by user, entries, reconciliation, daily reports | none for admins | Mock, req. 03 |
 | 16 | Tickets | queue, assignment, replies, internal notes, SLA | none | Mock, req. 04 |
-| 17 | Staff and roles | admins, role assignment, enable and disable, sessions of others | none (operators use `cmd/admin`) | Mock, req. 01 |
+| 17 | Staff | admins, group assignment with expiry, enable and disable, sessions of others, password policy | none (operators use `cmd/admin`) | Mock, req. 01 and 07 |
+| 18 | Access manager | permission catalog, groups, matrix editor with dependencies, effective-access preview, versions, access review | none | Mock, req. 01 |
+| 19 | Security settings | password and session policy, allowed networks and hours per group | none | Mock, req. 07 |
 
 ## Gaps the panel found in the backend
 
-1. **No roles.** The backend has one `admin` role. See requirement 01.
+1. **No roles.** The backend has one `admin` role. Dynamic groups, lookups, and the catalog are requirement 01.
 2. **No user directory or KYC for admins.** Requirement 02.
 3. **No ledger query for admins.** Users read only their own balances. Requirement 03.
 4. **No ticketing.** Requirement 04.
 5. **No dashboard aggregates.** Requirement 05.
 6. **No `GET /admin/me`.** The panel needs the administrator's identity and permissions. Requirement 01.
-7. **Venue hold clear** should need two administrators (backend issue 521); the panel will follow the backend's `second_approval_required` behaviour.
+7. **Admin credentials.** The backend has TOTP and an email code, no password, no refresh, one long token. Requirement 07.
+8. **Venue hold clear** should need two administrators (backend issue 521); the panel will follow the backend's `second_approval_required` behaviour.
 
 ## Patterns shared by all modules
 
